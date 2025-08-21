@@ -5,15 +5,11 @@ import { registerSteps } from "../page";
 const NavButton = ({
   currentStep,
   prevStep,
-  nextStep,
   handleSubmit,
-  nextDisabled,
 }: {
   currentStep: number;
   prevStep: () => void;
-  nextStep: () => void;
-  handleSubmit: () => void;
-  nextDisabled?: boolean;
+  handleSubmit?: () => void;
 }) => {
   return (
     <div className="flex justify-between">
@@ -22,12 +18,12 @@ const NavButton = ({
         Previous
       </Button>
       {currentStep < registerSteps.length ? (
-        <Button onClick={nextStep} disabled={nextDisabled}>
+        <Button type="submit">
           Next
           <ChevronRight className="h-4 w-4" />
         </Button>
       ) : (
-        <Button onClick={handleSubmit} disabled={nextDisabled}>
+        <Button onClick={handleSubmit}>
           <Check className="h-4 w-4" />
           Complete Registration
         </Button>

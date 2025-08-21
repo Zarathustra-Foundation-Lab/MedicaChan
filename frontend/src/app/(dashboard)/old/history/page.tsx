@@ -1,5 +1,5 @@
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { HistoryView } from "@/components/history-view";
+import { DashboardLayout } from "@/app/(dashboard)/old/components/dashboard-layout";
+import { HistoryView } from "@/app/(dashboard)/old/components/history-view";
 
 export default function HistoryPage() {
   return (

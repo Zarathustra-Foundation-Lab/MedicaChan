@@ -1,5 +1,5 @@
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { CheckupForm } from "@/components/checkup-form";
+import { DashboardLayout } from "@/app/(dashboard)/old/components/dashboard-layout";
+import { CheckupForm } from "@/app/(dashboard)/old/components/checkup-form";
 
 export default function AddCheckupPage() {
   return (
