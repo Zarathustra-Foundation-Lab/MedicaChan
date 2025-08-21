@@ -1,0 +1,36 @@
+{
+    "health_data": [
+        {
+            "id": "checkup-001",
+            "date": 1724236800,
+            "data": {
+                "temperature": 36.8,
+                "blood_pressure": "120/80",
+                "heart_rate": 75,
+                "respiration_rate": 18,
+                "sleep_hours": 7.5,
+                "mood": "Normal",
+                "activity_level": "Moderate",
+                "note": "No issues today.",
+                "photo_url": null
+            },
+            "is_public": false
+        },
+        {
+            "id": "checkup-002",
+            "date": 1724323200,
+            "data": {
+                "temperature": 37.2,
+                "blood_pressure": "125/85",
+                "heart_rate": 80,
+                "respiration_rate": 20,
+                "sleep_hours": 6.0,
+                "mood": "Stressed",
+                "activity_level": "Low",
+                "note": "Felt a bit tired.",
+                "photo_url": "https://ipfs.io/ipfs/examplehash/photo.png"
+            },
+            "is_public": true
+        }
+    ]
+}

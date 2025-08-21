@@ -1,0 +1,21 @@
+[
+    {
+        "user": "principal-67890",
+        "checkup": {
+            "id": "checkup-101",
+            "date": 1724323200,
+            "data": {
+                "temperature": 38.0,
+                "blood_pressure": "130/90",
+                "heart_rate": 95,
+                "respiration_rate": 22,
+                "sleep_hours": 5.0,
+                "mood": "Sick",
+                "activity_level": "Low",
+                "note": "Mild fever since last night.",
+                "photo_url": null
+            },
+            "is_public": true
+        }
+    }
+]

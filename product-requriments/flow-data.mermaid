@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant User
+    participant dApp as ICP dApp (Frontend)
+    participant Canister as ICP Canister (Rust)
+    participant FetchAI as Fetch AI Agent (Python)
+    participant ASI1 as ASI1 LLM
+
+    User->>dApp: Login via Internet Identity
+    dApp->>User: Step Registration Form
+    User->>dApp: Submit Profile Data
+    dApp->>Canister: /register-user
+    Canister-->>dApp: User Profile JSON
+
+    User->>dApp: Add Checkup
+    dApp->>Canister: /add-checkup
+    Canister-->>dApp: JSON (Checkup stored, default private)
+
+    User->>dApp: Publish Data
+    dApp->>Canister: /toggle-visibility
+    Canister-->>dApp: JSON (Reward + Status Updated)
+
+    FetchAI->>Canister: /get-public-data
+    Canister-->>FetchAI: JSON (Public Health Data)
+    FetchAI->>ASI1: Forward Data
+    ASI1-->>User: Summary / Analysis

@@ -1,0 +1,16 @@
+{
+    "id": "checkup-003",
+    "date": 1724409600,
+    "data": {
+        "temperature": 36.9,
+        "blood_pressure": "118/78",
+        "heart_rate": 72,
+        "respiration_rate": 19,
+        "sleep_hours": 8.0,
+        "mood": "Happy",
+        "activity_level": "High",
+        "note": "Felt very energetic today.",
+        "photo_url": null
+    },
+    "is_public": false
+}

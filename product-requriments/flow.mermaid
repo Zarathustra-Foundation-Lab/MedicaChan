@@ -1,0 +1,10 @@
+flowchart TD
+  A[User masuk ke App] --> B[Login via Internet Identity]
+  B --> C[Dashboard]
+  C --> D[Tambah Checkup Harian]
+  D --> E[Simpan ke Backend Rust]
+  E --> F[Data default Private]
+  F --> |Opsional| G[User Publish Data]
+  G --> H[Update status Public + reward token]
+  H --> I[Data tersedia untuk Fetch AI query]
+  C --> J[Lihat histori checkup & status reward]

@@ -1,0 +1,11 @@
+{
+    "id": "principal-12345",
+    "full_name": "Jonh DOe",
+    "age": 22,
+    "gender": "Male",
+    "height_cm": 175.0,
+    "weight_kg": 65.0,
+    "allergies": "Peanuts",
+    "chronic_diseases": "Asthma",
+    "total_rewards": 120
+}
