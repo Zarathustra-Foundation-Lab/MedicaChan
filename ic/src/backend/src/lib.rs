@@ -1,8 +1,10 @@
 use std::{cell::RefCell, collections::HashMap};
 
 use candid::CandidType;
+use ic_cdk::api::time;
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Clone, Serialize, Deserialize, CandidType)]
 pub struct HealthData {
@@ -78,3 +80,29 @@ pub fn register_user(
         Ok(user)
     })
 }
+
+#[ic_cdk::update]
+pub fn add_checkup(principal: Principal, data: HealthData) -> Result<HealthCheckup, String> {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        let user = users
+            .get_mut(&principal)
+            .ok_or("User not found".to_string())?;
+        let checkup_id = Uuid::new_v4().to_string();
+
+        let checkup = HealthCheckup {
+            id: checkup_id,
+            date: time(),
+            data,
+            is_public: false,
+        };
+
+        user.health_data.push(checkup.clone());
+        Ok(checkup)
+    })
+}
+
+// #[ic_cdk::query]
+// pub fn get_user_profile(principal: Principal) {
+
+// }
