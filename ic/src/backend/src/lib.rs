@@ -1,7 +1,7 @@
 use std::{cell::RefCell, collections::HashMap};
 
 use candid::CandidType;
-use ic_cdk::api::time;
+use ic_cdk::{api::time, export_candid};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -191,3 +191,5 @@ pub fn get_user_history(principal: Principal) -> Result<Vec<HealthCheckup>, Stri
         }
     })
 }
+
+export_candid!();
