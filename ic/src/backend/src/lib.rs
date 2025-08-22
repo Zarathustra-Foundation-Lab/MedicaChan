@@ -179,3 +179,15 @@ pub fn get_private_data(principal: Principal) -> Result<Vec<HealthCheckup>, Stri
         }
     })
 }
+
+#[ic_cdk::query]
+pub fn get_user_history(principal: Principal) -> Result<Vec<HealthCheckup>, String> {
+    USERS.with(|users| {
+        let users = users.borrow();
+
+        match users.get(&principal) {
+            Some(user) => Ok(user.health_data.clone()),
+            None => Err("User not found".to_string()),
+        }
+    })
+}
