@@ -103,14 +103,13 @@ pub fn add_checkup(principal: Principal, data: HealthData) -> Result<HealthCheck
 }
 
 #[ic_cdk::update]
-pub fn publish_checkup(
-    principal: Principal,
-    checkup_id: String
-) -> Result<(), String> {
+pub fn publish_checkup(principal: Principal, checkup_id: String) -> Result<(), String> {
     USERS.with(|users| {
         let mut users = users.borrow_mut();
 
-        let user = users.get_mut(&principal).ok_or("User not found".to_string())?;
+        let user = users
+            .get_mut(&principal)
+            .ok_or("User not found".to_string())?;
 
         if let Some(checkup) = user.health_data.iter_mut().find(|c| c.id == checkup_id) {
             if checkup.is_public {
@@ -125,7 +124,43 @@ pub fn publish_checkup(
         }
     })
 }
-// #[ic_cdk::query]
-// pub fn get_user_profile(principal: Principal) {
 
-// }
+#[ic_cdk::query]
+pub fn get_user_profile(principal: Principal) -> Result<User, String> {
+    USERS.with(|users| {
+        let users = users.borrow();
+
+        match users.get(&principal) {
+            Some(user) => Ok(user.clone()),
+            None => Err("User not found".to_string()),
+        }
+    })
+}
+
+#[ic_cdk::query]
+pub fn get_public_data() -> Vec<HealthCheckup> {
+    USERS.with(|users| {
+        let users = users.borrow();
+
+        users
+            .values()
+            .flat_map(|user| {
+                user.health_data
+                    .iter()
+                    .filter(|checkup| checkup.is_public)
+                    .cloned()
+            })
+            .collect()
+    })
+}
+
+#[ic_cdk::query]
+pub fn get_private_data(principal: Principal) -> Result<Vec<HealthCheckup>, String> {
+    USERS.with(|users| {
+        let users = users.borrow();
+        match users.get(&principal) {
+            Some(user) => Ok(user.health_data.clone()),
+            None => Err("User not found".to_string()),
+        }
+    })
+}
