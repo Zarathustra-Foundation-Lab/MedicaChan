@@ -31,7 +31,9 @@ import {
   Heart,
   Shield,
   Camera,
+  Lightbulb,
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Mock data based on user_profile.json
 const initialUserData = {
@@ -110,12 +112,12 @@ export function ProfileView() {
   const bmiInfo = getBMICategory(bmi);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 p-5">
       {/* Profile Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row gap-5 items-center justify-between">
+            <div className="flex flex-col md:flex-row items-center gap-4">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={userData.avatar} alt={userData.fullName} />
                 <AvatarFallback className="text-lg">
@@ -125,18 +127,18 @@ export function ProfileView() {
                     .join("")}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="flex flex-col gap-2 items-center md:items-start">
                 <CardTitle className="text-2xl">{userData.fullName}</CardTitle>
                 <CardDescription className="text-base">
                   {userData.email}
                 </CardDescription>
-                <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center flex-col md:flex-row gap-4 mt-2">
                   <Badge variant="outline">
-                    <Calendar className="mr-1 h-3 w-3" />
+                    <Calendar className="h-3 w-3" />
                     Joined {new Date(userData.joinDate).toLocaleDateString()}
                   </Badge>
                   <Badge variant="secondary">
-                    <Shield className="mr-1 h-3 w-3" />
+                    <Shield className="h-3 w-3" />
                     Principal: {userData.id}
                   </Badge>
                 </div>
@@ -144,13 +146,13 @@ export function ProfileView() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Camera className="mr-2 h-4 w-4" />
+              <Button variant="outline">
+                <Camera className="h-4 w-4" />
                 Change Photo
               </Button>
               {!isEditing ? (
                 <Button onClick={() => setIsEditing(true)}>
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="h-4 w-4" />
                   Edit Profile
                 </Button>
               ) : (
@@ -159,7 +161,7 @@ export function ProfileView() {
                     Cancel
                   </Button>
                   <Button onClick={handleSave} disabled={isSaving}>
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save className="h-4 w-4" />
                     {isSaving ? "Saving..." : "Save"}
                   </Button>
                 </div>
@@ -174,7 +176,7 @@ export function ProfileView() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-4 w-4" />
+              <User className="size-4 text-primary" />
               Basic Information
             </CardTitle>
             <CardDescription>
@@ -222,7 +224,7 @@ export function ProfileView() {
                   value={userData.gender}
                   onValueChange={(value) => updateUserData("gender", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -244,7 +246,7 @@ export function ProfileView() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
+              <Activity className="size-4 text-primary" />
               Physical Information
             </CardTitle>
             <CardDescription>
@@ -289,7 +291,7 @@ export function ProfileView() {
             </div>
 
             {!isEditing && (
-              <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="p-3 bg-muted/40 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">BMI</p>
@@ -308,7 +310,7 @@ export function ProfileView() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
+              <Heart className="size-4 text-primary" />
               Medical History
             </CardTitle>
             <CardDescription>
@@ -354,7 +356,7 @@ export function ProfileView() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Coins className="h-4 w-4" />
+              <Coins className="size-4 text-primary" />
               Rewards & Activity
             </CardTitle>
             <CardDescription>
@@ -397,13 +399,13 @@ export function ProfileView() {
                 </span>
               </div>
             </div>
-
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <p className="text-sm text-emerald-700">
-                💡 Share more health data publicly to earn additional DHT tokens
+            <Alert className="mt-4" variant="success">
+              <Lightbulb />
+              <AlertDescription className="font-semibold text-emerald-600">
+                Share more health data publicly to earn additional DHT tokens
                 and contribute to AI health research.
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </div>
@@ -412,7 +414,7 @@ export function ProfileView() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
+            <Shield className="size-4 text-primary" />
             Privacy & Security
           </CardTitle>
           <CardDescription>
@@ -450,7 +452,7 @@ export function ProfileView() {
               <Button variant="outline">Export Data</Button>
             </div>
 
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
               <div>
                 <p className="font-medium">Account Deletion</p>
                 <p className="text-sm text-muted-foreground">

@@ -421,8 +421,8 @@ export function FormCheckup() {
                 <Alert className="mt-4" variant="success">
                   <DollarSign />
                   <AlertDescription className="font-semibold text-emerald-600">
-                    Publishing this data will earn you 10 DHT tokens as a //
-                    reward for contributing to the health database.
+                    Publishing this data will earn you 10 DHT tokens as a reward
+                    for contributing to the health database.
                   </AlertDescription>
                 </Alert>
               )}

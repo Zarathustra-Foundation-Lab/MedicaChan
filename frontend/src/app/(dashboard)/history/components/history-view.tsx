@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -29,11 +30,9 @@ import {
   Eye,
   EyeOff,
   MoreHorizontal,
-  Edit,
   Trash2,
-  Share2,
-  TrendingUp,
   Search,
+  Thermometer,
 } from "lucide-react";
 
 // Mock data based on user_history.json
@@ -175,53 +174,55 @@ export function HistoryView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 p-5">
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Records</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Public</CardTitle>
-            <Eye className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.public}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Private</CardTitle>
-            <EyeOff className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.private}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avg Temperature
+          <CardHeader>
+            <CardDescription>Total Records</CardDescription>
+            <CardTitle className="text-3xl font-semibold tabular-nums text-primary">
+              {stats.total}
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
+            <CardAction className="bg-emerald-100/40 text-primary dark:bg-muted/50 p-3 rounded-lg">
+              <Heart />
+            </CardAction>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardDescription>Public</CardDescription>
+            <CardTitle className="text-3xl font-semibold tabular-nums text-primary">
+              {stats.public}
+            </CardTitle>
+            <CardAction className="bg-emerald-100/40 text-primary dark:bg-muted/50 p-3 rounded-lg">
+              <Eye />
+            </CardAction>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardDescription>Private</CardDescription>
+            <CardTitle className="text-3xl font-semibold tabular-nums text-primary">
+              {stats.private}
+            </CardTitle>
+            <CardAction className="bg-emerald-100/40 text-primary dark:bg-muted/50 p-3 rounded-lg">
+              <EyeOff />
+            </CardAction>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardDescription>Avg Temperature</CardDescription>
+            <CardTitle className="text-3xl font-semibold tabular-nums text-primary">
               {stats.avgTemperature.toFixed(1)}°C
-            </div>
-          </CardContent>
+            </CardTitle>
+            <CardAction className="bg-emerald-100/40 text-primary dark:bg-muted/50 p-3 rounded-lg">
+              <Thermometer />
+            </CardAction>
+          </CardHeader>
         </Card>
       </div>
 
@@ -303,10 +304,10 @@ export function HistoryView() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <Heart className="h-4 w-4" />
+                      <Heart className="size-4 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">
+                      <CardTitle className="text-primary font-semibold">
                         {new Date(record.date).toLocaleDateString("en-US", {
                           weekday: "long",
                           year: "numeric",
@@ -314,10 +315,9 @@ export function HistoryView() {
                           day: "numeric",
                         })}
                       </CardTitle>
-                      <CardDescription>Checkup ID: {record.id}</CardDescription>
+                      <CardDescription>ID: {record.id}</CardDescription>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-2">
                     <Badge variant={record.isPublic ? "default" : "secondary"}>
                       {record.isPublic ? (
@@ -332,7 +332,6 @@ export function HistoryView() {
                         </>
                       )}
                     </Badge>
-
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
@@ -340,46 +339,36 @@ export function HistoryView() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
+                        {/* <DropdownMenuItem
                           onClick={() =>
                             alert(
                               "Edit functionality would be implemented here"
                             )
                           }
                         >
-                          <Edit className="mr-2 h-4 w-4" />
+                          <Edit className="size-4" />
                           Edit
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                         <DropdownMenuItem
                           onClick={() => togglePrivacy(record.id)}
                         >
                           {record.isPublic ? (
                             <>
-                              <EyeOff className="mr-2 h-4 w-4" />
+                              <EyeOff className="size-4" />
                               Make Private
                             </>
                           ) : (
                             <>
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className="size-4" />
                               Publish Public
                             </>
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            alert(
-                              "Share functionality would be implemented here"
-                            )
-                          }
-                        >
-                          <Share2 className="mr-2 h-4 w-4" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
+                          variant="destructive"
                           onClick={() => deleteRecord(record.id)}
-                          className="text-red-600"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="size-4" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -387,7 +376,6 @@ export function HistoryView() {
                   </div>
                 </div>
               </CardHeader>
-
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Vital Signs */}
