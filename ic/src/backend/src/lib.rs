@@ -1,10 +1,12 @@
 use std::{cell::RefCell, collections::HashMap};
 
 use candid::CandidType;
-use ic_cdk::{api::time, export_candid};
+use ic_cdk::{
+    api::{management_canister::main::raw_rand, time},
+    export_candid,
+};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Clone, Serialize, Deserialize, CandidType)]
 pub struct HealthData {
@@ -45,6 +47,23 @@ thread_local! {
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
 }
 
+async fn generate_uuid() -> String {
+    let (res,) = raw_rand().await.unwrap();
+    let bytes = &res[..16];
+
+    // Format ke UUID v4 (tanpa pakai crate uuid)
+    format!(
+        "{:08x}-{:04x}-4{:03x}-{:04x}-{:012x}",
+        u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]),
+        u16::from_be_bytes([bytes[4], bytes[5]]),
+        u16::from_be_bytes([bytes[6] & 0x0f, bytes[7]]), // version = 4
+        u16::from_be_bytes([bytes[8] & 0x3f | 0x80, bytes[9]]), // variant
+        u64::from_be_bytes([
+            bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15], 0, 0
+        ]) >> 16
+    )
+}
+
 #[ic_cdk::update]
 pub fn register_user(
     principal: Principal,
@@ -82,13 +101,14 @@ pub fn register_user(
 }
 
 #[ic_cdk::update]
-pub fn add_checkup(principal: Principal, data: HealthData) -> Result<HealthCheckup, String> {
+async fn add_checkup(principal: Principal, data: HealthData) -> Result<HealthCheckup, String> {
+    let checkup_id = generate_uuid().await;
+
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         let user = users
             .get_mut(&principal)
             .ok_or("User not found".to_string())?;
-        let checkup_id = Uuid::new_v4().to_string();
 
         let checkup = HealthCheckup {
             id: checkup_id,
