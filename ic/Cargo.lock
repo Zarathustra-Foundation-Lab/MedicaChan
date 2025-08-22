@@ -27,6 +27,7 @@ dependencies = [
  "candid",
  "ic-cdk",
  "ic-http-certification",
+ "ic_principal",
  "serde",
  "serde_json",
 ]
