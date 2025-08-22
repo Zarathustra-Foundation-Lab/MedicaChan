@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, History, User, Plus } from "lucide-react";
+import { Home, History, User, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
@@ -37,7 +37,7 @@ export function AppSidebar() {
     {
       title: "Add Checkup",
       url: "/add-checkup",
-      icon: Plus,
+      icon: PlusCircle,
     },
     {
       title: "History",
