@@ -102,6 +102,29 @@ pub fn add_checkup(principal: Principal, data: HealthData) -> Result<HealthCheck
     })
 }
 
+#[ic_cdk::update]
+pub fn publish_checkup(
+    principal: Principal,
+    checkup_id: String
+) -> Result<(), String> {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+
+        let user = users.get_mut(&principal).ok_or("User not found".to_string())?;
+
+        if let Some(checkup) = user.health_data.iter_mut().find(|c| c.id == checkup_id) {
+            if checkup.is_public {
+                return Err("Checkup already published".to_string());
+            }
+            checkup.is_public = true;
+            user.total_rewards += 10;
+
+            Ok(())
+        } else {
+            Err("Checkup not found".to_string())
+        }
+    })
+}
 // #[ic_cdk::query]
 // pub fn get_user_profile(principal: Principal) {
 
