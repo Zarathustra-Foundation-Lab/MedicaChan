@@ -12,14 +12,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, History, User, Wallet, Plus } from "lucide-react";
+import { Home, History, User, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AppConfig } from "@/config/app-config";
 import { Logo } from "@/app/landing/components/navbar/logo";
+import { Badge } from "./ui/badge";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -81,6 +81,23 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Rewards</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2 py-2">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 dark:bg-muted/50 border">
+                <div>
+                  <p className="text-sm font-medium">Total Rewards</p>
+                  <p className="text-xs text-muted-foreground">DHT Tokens</p>
+                </div>
+                <Badge variant="secondary" className="ml-2">
+                  0
+                </Badge>
+              </div>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

@@ -16,7 +16,8 @@ export const AppBreadcrumb = () => {
     { name: "Home", href: "/" },
     ...segments.map((segment, idx) => {
       const href = "/" + segments.slice(0, idx + 1).join("/");
-      const name = segment.charAt(0).toUpperCase() + segment.slice(1);
+      const name =
+        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
       return { name, href };
     }),
   ];

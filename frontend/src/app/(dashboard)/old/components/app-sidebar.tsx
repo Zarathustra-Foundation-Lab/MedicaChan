@@ -42,22 +42,22 @@ const user = {
 const navItems = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/old",
     icon: Home,
   },
   {
     title: "Add Checkup",
-    url: "/dashboard/add-checkup",
+    url: "/old/add-checkup",
     icon: Plus,
   },
   {
     title: "History",
-    url: "/dashboard/history",
+    url: "/old/history",
     icon: History,
   },
   {
     title: "Profile",
-    url: "/dashboard/profile",
+    url: "/old/profile",
     icon: User,
   },
 ];
