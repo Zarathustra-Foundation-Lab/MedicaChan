@@ -11,11 +11,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useRegistrationDataStore } from "../hooks/use-registration-data";
 import NavButton from "./nav-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CircleAlert, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
