@@ -125,6 +125,21 @@ pub fn publish_checkup(principal: Principal, checkup_id: String) -> Result<(), S
     })
 }
 
+#[ic_cdk::update]
+pub fn reward_user(principal: Principal, points: u64) -> Result<User, String> {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+
+        match users.get_mut(&principal) {
+            Some(user) => {
+                user.total_rewards += points;
+                Ok(user.clone())
+            }
+            None => Err("User not found".to_string()),
+        }
+    })
+}
+
 #[ic_cdk::query]
 pub fn get_user_profile(principal: Principal) -> Result<User, String> {
     USERS.with(|users| {
