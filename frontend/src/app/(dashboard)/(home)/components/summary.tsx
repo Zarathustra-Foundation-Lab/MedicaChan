@@ -14,7 +14,7 @@ const Summary = ({ dashboardData }: { dashboardData: any }) => {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader>
-          <CardDescription>Income</CardDescription>
+          <CardDescription>Total Checkups</CardDescription>
           <CardTitle className="text-3xl font-semibold tabular-nums text-primary">
             {dashboardData.totalCheckups}
           </CardTitle>

@@ -132,7 +132,7 @@ export function ProfileView() {
                 <CardDescription className="text-base">
                   {userData.email}
                 </CardDescription>
-                <div className="flex items-center flex-col md:flex-row gap-4 mt-2">
+                <div className="flex items-center flex-col md:flex-row gap-2 mt-2">
                   <Badge variant="outline">
                     <Calendar className="h-3 w-3" />
                     Joined {new Date(userData.joinDate).toLocaleDateString()}
@@ -215,29 +215,29 @@ export function ProfileView() {
                   </p>
                 )}
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Gender</label>
-              {isEditing ? (
-                <Select
-                  value={userData.gender}
-                  onValueChange={(value) => updateUserData("gender", value)}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {userData.gender}
-                </p>
-              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Gender</label>
+                {isEditing ? (
+                  <Select
+                    value={userData.gender}
+                    onValueChange={(value) => updateUserData("gender", value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {userData.gender}
+                  </p>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

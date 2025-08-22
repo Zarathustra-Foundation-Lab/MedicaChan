@@ -286,7 +286,7 @@ export function HistoryView() {
         {filteredRecords.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-8">
-              <Heart className="h-12 w-12 text-muted-foreground mb-4" />
+              <Heart className="h-12 w-12 text-primary mb-4" />
               <h3 className="text-lg font-medium mb-2">
                 No checkup records found
               </h3>
@@ -301,12 +301,12 @@ export function HistoryView() {
           filteredRecords.map((record) => (
             <Card key={record.id}>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row items-start gap-2 md:items-center md:justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                    <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-muted">
                       <Heart className="size-4 text-primary" />
                     </div>
-                    <div>
+                    <div className="flex flex-col gap-1">
                       <CardTitle className="text-primary font-semibold">
                         {new Date(record.date).toLocaleDateString("en-US", {
                           weekday: "long",
@@ -318,7 +318,7 @@ export function HistoryView() {
                       <CardDescription>ID: {record.id}</CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-between w-full md:w-auto">
                     <Badge variant={record.isPublic ? "default" : "secondary"}>
                       {record.isPublic ? (
                         <>
