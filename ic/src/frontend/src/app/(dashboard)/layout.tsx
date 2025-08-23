@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Layout({
   children,
@@ -13,8 +14,14 @@ export default function Layout({
 
   const { isAuth } = useAuth();
 
-  if (!isAuth) {
-    router.push("/");
+  useEffect(() => {
+    if (isAuth === false) {
+      router.replace("/");
+    }
+  }, [isAuth, router]);
+
+  if (isAuth === undefined || isAuth === false) {
+    return null;
   }
 
   return (
