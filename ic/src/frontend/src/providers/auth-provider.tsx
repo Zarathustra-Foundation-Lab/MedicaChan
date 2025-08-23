@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { AuthClient } from "@dfinity/auth-client";
-import { Identity } from "@dfinity/agent";
+import { Identity, ActorSubclass } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { createActor, canisterId } from "../../../declarations/backend";
+import { _SERVICE } from "../../../declarations/backend/backend.did";
 
 interface AuthContextType {
   isAuth: boolean;
@@ -13,8 +14,7 @@ interface AuthContextType {
   authUser: AuthClient | null;
   identity: Identity | null;
   principal: Principal | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callFunction: any;
+  callFunction: ActorSubclass<_SERVICE> | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

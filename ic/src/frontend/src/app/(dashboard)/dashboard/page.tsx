@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Summary from "./components/summary";
 import RecentCheckup from "./components/recent-checkup";
 import HealthInsight from "./components/health-insight";
+import { useAuth } from "@/providers/auth-provider";
+import { useEffect } from "react";
 
 // Mock data
 const dashboardData = {
@@ -43,6 +45,17 @@ const dashboardData = {
 
 export default function DashboardPage() {
   const router = useRouter();
+
+  const { callFunction, principal } = useAuth();
+
+  const getUserProfile = async () => {
+    // const userProfile = await callFunction?.http_request({});
+    // console.log(userProfile);
+  };
+
+  useEffect(() => {
+    getUserProfile();
+  }, []);
 
   return (
     <div>

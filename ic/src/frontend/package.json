@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "dfx generate || true",
     "dev": "next dev --turbopack",
+    "prebuild": "dfx generate || true",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
