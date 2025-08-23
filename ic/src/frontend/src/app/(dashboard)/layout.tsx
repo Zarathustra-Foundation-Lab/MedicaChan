@@ -1,19 +1,27 @@
+"use client";
+
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { cookies } from "next/headers";
+import { useAuth } from "@/providers/auth-provider";
+import { useRouter } from "next/navigation";
 
-export default async function Layout({
+export default function Layout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const token = (await cookies()).get("token")?.value ?? "";
+}: Readonly<{ children: React.ReactNode }>) {
+  const router = useRouter();
+
+  const { isAuth } = useAuth();
+
+  if (!isAuth) {
+    router.push("/");
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <main className="flex flex-col flex-1 min-w-0">
-        <AppHeader token={token} />
+        <AppHeader />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           {children}
         </div>

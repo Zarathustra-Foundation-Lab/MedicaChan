@@ -18,7 +18,7 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Logo } from "@/app/landing/components/navbar/logo";
+import { Logo } from "@/app/(landing)/components/navbar/logo";
 import { Badge } from "./ui/badge";
 
 export function AppSidebar() {

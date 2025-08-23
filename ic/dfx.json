@@ -4,6 +4,11 @@
       "candid": "src/backend/backend.did",
       "package": "backend",
       "type": "rust"
+    },
+    "frontend": {
+      "entrypoint": "src/frontend/out/index.html",
+      "source": ["src/frontend/out"],
+      "type": "assets"
     }
   },
   "defaults": {

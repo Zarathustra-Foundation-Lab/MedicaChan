@@ -21,34 +21,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/providers/auth-provider";
 
 const user = {
   name: "John Doe",
 };
 
-export const AppHeader = ({ token }: { token: string }) => {
-  // const { setToken, removeToken, setSetting } = useUserData();
+export const AppHeader = () => {
+  const { logout } = useAuth();
 
   const [showModalLogout, setShowModalLogout] = useState(false);
 
-  const logout = async () => {
-    // await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/landing";
-    // removeToken();
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/";
   };
-
-  // const { data: user } = useGetMe({ token });
-  // const { data: setting } = useGetSetting({ token });
-
-  // useEffect(() => {
-  //   setToken(token);
-  // }, [token, setToken]);
-
-  // useEffect(() => {
-  //   if (setting) {
-  //     setSetting({ currency: setting.currency });
-  //   }
-  // }, [setting, setSetting]);
 
   return (
     <div className="border-b p-2 flex items-center justify-between gap-5">
@@ -96,7 +83,7 @@ export const AppHeader = ({ token }: { token: string }) => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" onClick={logout}>
+            <Button type="submit" onClick={handleLogout}>
               Yes, Logout
             </Button>
           </DialogFooter>

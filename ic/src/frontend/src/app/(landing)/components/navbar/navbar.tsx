@@ -15,7 +15,7 @@ const Navbar = () => {
           <Link href="/register" className="hidden md:block">
             <Button variant="outline">Sign Up</Button>
           </Link>
-          <Link href="/">
+          <Link href="/dashboard">
             <Button>Dashboard</Button>
           </Link>
           {/* Mobile Menu */}
