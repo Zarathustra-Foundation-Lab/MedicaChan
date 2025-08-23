@@ -6,9 +6,11 @@
       "type": "rust"
     },
     "frontend": {
+      "dependencies": ["backend"],
       "entrypoint": "src/frontend/out/index.html",
       "source": ["src/frontend/out"],
-      "type": "assets"
+      "type": "assets",
+      "workspaces": "frontend"
     }
   },
   "defaults": {

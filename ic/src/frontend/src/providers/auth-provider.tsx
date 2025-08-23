@@ -35,7 +35,8 @@ export const useAuthClient = (options = defaultOptions) => {
   const [authUser, setAuthUser] = useState<AuthClient | null>(null);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [principal, setPrincipal] = useState<Principal | null>(null);
-  const [callFunction, setCallFunction] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [callFunction, setCallFunction] = useState<any | null>(null);
 
   const updateClient = async (client: AuthClient) => {
     const isAuthenticated = await client.isAuthenticated();

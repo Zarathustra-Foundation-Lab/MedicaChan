@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dfinity/agent": "^3.2.2",
     "@dfinity/auth-client": "^3.2.2",
     "@dfinity/use-auth-client": "^3.2.2",
     "@hookform/resolvers": "^5.2.1",
