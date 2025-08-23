@@ -15,8 +15,15 @@ import {
 import Link from "next/link";
 import React from "react";
 import { motion } from "motion/react";
+import { useAuth } from "@/providers/auth-provider";
 
 const Hero = () => {
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    await login();
+  };
+
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features");
     if (featuresSection) {
@@ -205,14 +212,13 @@ const Hero = () => {
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <Link href="/register">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto rounded-lg text-base shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-                >
-                  Get Started <ArrowUpRight className="!h-5 !w-5" />
-                </Button>
-              </Link>
+              <Button
+                onClick={handleLogin}
+                size="lg"
+                className="w-full sm:w-auto rounded-lg text-base shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+              >
+                Get Started <ArrowUpRight className="!h-5 !w-5" />
+              </Button>
             </motion.div>
 
             <motion.div

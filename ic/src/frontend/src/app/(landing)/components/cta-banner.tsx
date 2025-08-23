@@ -5,8 +5,15 @@ import { AnimatedGridPattern } from "./animated-grid-pattern";
 import { AppConfig } from "@/config/app-config";
 import Link from "next/link";
 import { motion } from "motion/react";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function CTABanner() {
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    await login();
+  };
+
   return (
     <section className="px-6">
       <motion.div
@@ -65,14 +72,13 @@ export default function CTABanner() {
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <Link href="/register">
-              <Button
-                size="lg"
-                className="shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Get Started <ArrowUpRight className="!h-5 !w-5" />
-              </Button>
-            </Link>
+            <Button
+              onClick={handleLogin}
+              size="lg"
+              className="shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              Get Started <ArrowUpRight className="!h-5 !w-5" />
+            </Button>
           </motion.div>
         </motion.div>
       </motion.div>

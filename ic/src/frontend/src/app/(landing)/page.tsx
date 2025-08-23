@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/providers/auth-provider";
 import CTABanner from "./components/cta-banner";
 import Features from "./components/features";
 import Footer from "./components/footer";
@@ -8,8 +9,19 @@ import HowItWorks from "./components/how-it-works";
 import { Navbar } from "./components/navbar";
 import Stats from "./components/stats";
 import { motion } from "motion/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { isAuth } = useAuth();
+
+  useEffect(() => {
+    if (isAuth === true) {
+      router.replace("/dashboard");
+    }
+  }, [isAuth, router]);
+
   return (
     <>
       <Navbar />
