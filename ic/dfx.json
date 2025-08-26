@@ -1,14 +1,20 @@
 {
   "canisters": {
     "backend": {
+      "specified_id": "rdmx6-jaaaa-aaaaa-aaadq-cai",
       "candid": "src/backend/backend.did",
+      "main": "src/backend/lib.rs",
       "package": "backend",
       "type": "rust"
     },
     "frontend": {
-      "dependencies": ["backend"],
+      "dependencies": [
+        "backend"
+      ],
       "entrypoint": "src/frontend/out/index.html",
-      "source": ["src/frontend/out"],
+      "source": [
+        "src/frontend/out"
+      ],
       "type": "assets",
       "workspaces": "frontend"
     },

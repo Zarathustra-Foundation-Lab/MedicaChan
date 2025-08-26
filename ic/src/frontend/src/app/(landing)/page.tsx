@@ -18,7 +18,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isAuth === true) {
-      router.replace("/dashboard");
+      router.replace("/register");
     }
   }, [isAuth, router]);
 

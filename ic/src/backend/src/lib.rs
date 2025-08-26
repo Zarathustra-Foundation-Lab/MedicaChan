@@ -212,4 +212,5 @@ pub fn get_user_history(principal: Principal) -> Result<Vec<HealthCheckup>, Stri
     })
 }
 
+
 export_candid!();
