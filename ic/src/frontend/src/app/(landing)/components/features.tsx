@@ -117,7 +117,7 @@ const Features = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          Why Choose DeHealth?
+          Why Choose MedicaChan?
         </motion.h2>
         <motion.p
           className="text-muted-foreground lg:text-lg text-base mt-4"

@@ -11,16 +11,15 @@ import { Principal } from "@dfinity/principal";
 // Tipe untuk hasil operasi
 // type Result<T> = { Ok: T } | { Err: string };
 
+const BACKEND_CANISTER_ID =
+  process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID || "u6s2n-gx777-77774-qaaba-cai";
+
 /**
  * Custom hook untuk mengambil profil pengguna
  * @param principal - Principal ID pengguna
  * @returns Object dengan data, loading state, dan error
  */
 export const useUserProfile = (principal: string) => {
-  const BACKEND_CANISTER_ID =
-    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uxrrr-q7777-77774-qaaaq-cai";
-
   const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,10 +61,6 @@ export const useUserProfile = (principal: string) => {
  * @returns Fungsi mutate dan state loading & error
  */
 export const useAddCheckup = () => {
-  const BACKEND_CANISTER_ID =
-    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uxrrr-q7777-77774-qaaaq-cai";
-
   const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,10 +101,6 @@ export const useAddCheckup = () => {
  * @returns Object dengan data, loading state, dan error
  */
 export const useGetPrivateData = (principal: string) => {
-  const BACKEND_CANISTER_ID =
-    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uxrrr-q7777-77774-qaaaq-cai";
-
   const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<HealthCheckup[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -187,10 +178,6 @@ export const useGetPublicData = () => {
  * @returns Fungsi mutate dan state loading & error
  */
 export const usePublishCheckup = () => {
-  const BACKEND_CANISTER_ID =
-    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uxrrr-q7777-77774-qaaaq-cai";
-
   const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -230,10 +217,6 @@ export const usePublishCheckup = () => {
  * @returns Fungsi mutate dan state loading & error
  */
 export const useRegisterUser = () => {
-  const BACKEND_CANISTER_ID =
-    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uxrrr-q7777-77774-qaaaq-cai";
-
   console.log(BACKEND_CANISTER_ID);
 
   const service = useService(BACKEND_CANISTER_ID);

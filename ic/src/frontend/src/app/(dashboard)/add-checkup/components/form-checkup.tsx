@@ -42,6 +42,8 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAddCheckup } from "@/hooks/use-backend";
+import { useAuth } from "@/providers/auth-provider";
 
 const moodOptions = [
   { value: "happy", label: "Happy", emoji: "😊" },
@@ -88,6 +90,8 @@ const formSchema = z.object({
 });
 
 export function FormCheckup() {
+  const { principal } = useAuth();
+
   const [isPrivate, setIsPrivate] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -106,8 +110,60 @@ export function FormCheckup() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  // Hook untuk menambahkan checkup baru ke backend
+  const { mutate: addCheckup, loading, error } = useAddCheckup();
+
+  // Fungsi untuk menangani submit form
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log({ principal });
+    if (principal)
+      try {
+        // Mapping data form ke format HealthData sesuai dengan tipe yang diharapkan oleh backend
+        const healthData = {
+          temperature: parseFloat(values.temperature),
+          blood_pressure: {
+            systolic: parseInt(values.bloodPressureSystolic),
+            diastolic: parseInt(values.bloodPressureDiastolic),
+          },
+          heart_rate: parseInt(values.heartRate),
+          respiration_rate: values.respirationRate
+            ? [parseInt(values.respirationRate)]
+            : [],
+          sleep_hours: values.sleepHours ? [parseFloat(values.sleepHours)] : [],
+          mood: values.mood,
+          activity_level: values.activityLevel,
+          note: values.notes ? [values.notes] : [], // Properti 'note' sesuai dengan tipe HealthData
+          photo_url: values.photoUrl ? [values.photoUrl] : [], // Mengikuti pola opsi [] | [string]
+          timestamp: new Date().toISOString(),
+          is_private: isPrivate,
+        };
+
+        // Dapatkan principal pengguna
+        const userPrincipal = principal?.toString();
+
+        // Panggil fungsi mutate untuk menambahkan checkup
+        const res = await addCheckup(userPrincipal, {
+          activity_level: [healthData.activity_level],
+          blood_pressure: `${String(
+            healthData.blood_pressure.diastolic
+          )}/${String(healthData.blood_pressure.systolic)}`,
+          heart_rate: healthData.heart_rate,
+          mood: healthData.mood,
+          note: healthData.note[0],
+          photo_url: [healthData.photo_url[0]],
+          sleep_hours: [healthData.sleep_hours[0]],
+          respiration_rate: [healthData.respiration_rate[0]],
+          temperature: healthData.temperature,
+        });
+
+        console.log({ res });
+
+        // Reset form setelah submit berhasil
+        form.reset();
+      } catch (err) {
+        console.error("Failed to submit checkup:", error);
+        // Error akan ditangani oleh hook useAddCheckup
+      }
   }
 
   return (
@@ -129,7 +185,9 @@ export function FormCheckup() {
         </Card>
 
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={() => {
+            form.handleSubmit(onSubmit);
+          }}
           className="flex flex-col gap-6"
         >
           {/* Vital Signs */}
@@ -360,12 +418,13 @@ export function FormCheckup() {
                 )}
               />
               <div className="space-y-2">
-                <FormLabel>Photo (Optional)</FormLabel>
+                <FormLabel>Photo (Coming Soon)</FormLabel>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => {}}
                   className="w-full"
+                  disabled
                 >
                   <Camera className="size-4" />
                   Take Photo or Upload Image
@@ -427,11 +486,25 @@ export function FormCheckup() {
             </CardContent>
           </Card>
           <div className="flex justify-end">
-            <Button type="submit">
-              <Save className="size-4" />
-              Save {isPrivate ? "Private" : "Public"} Checkup
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <>
+                  <Save className="size-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="size-4 mr-2" />
+                  Save {isPrivate ? "Private" : "Public"} Checkup
+                </>
+              )}
             </Button>
           </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>Error: {error}</AlertDescription>
+            </Alert>
+          )}
         </form>
       </div>
     </Form>

@@ -2,6 +2,8 @@ import { TitleContent } from "@/components/title-content";
 import { FormCheckup } from "./components/form-checkup";
 
 export default function AddCheckupPage() {
+
+  
   return (
     <div>
       <TitleContent

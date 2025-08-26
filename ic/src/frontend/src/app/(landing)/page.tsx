@@ -10,19 +10,25 @@ import { Navbar } from "./components/navbar";
 import Stats from "./components/stats";
 import { motion } from "motion/react";
 
-import { useAuthRedirect } from "@/hooks/use-auth-redirect";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useUserProfile } from "@/hooks/use-backend";
 
 export default function LandingPage() {
-  // const router = useRouter();
-  // const { isAuth } = useAuth();
+  const router = useRouter();
+  const { isAuth, principal } = useAuth();
 
-  // useEffect(() => {
-  //   if (isAuth === true) {
-  //     router.replace("/register");
-  //   }
-  // }, [isAuth, router]);
+  const { data } = useUserProfile(principal?.toString() || "");
 
-  useAuthRedirect();
+  useEffect(() => {
+    if (data?.full_name && data.id) {
+      router.push("/dashboard");
+    } else {
+      if (isAuth === true && principal) {
+        router.replace("/register");
+      }
+    }
+  }, [isAuth, router]);
 
   return (
     <>

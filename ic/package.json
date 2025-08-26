@@ -3,7 +3,7 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-  "name": "dehealth",
+  "name": "MedicaChan",
   "scripts": {
     "dev": "npm run dev -w src/frontend",
     "build": "npm run build --workspaces --if-present",

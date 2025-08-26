@@ -1,4 +1,4 @@
-# 🏥 DeHealth Staking dApp on ICP
+# 🏥 MedicaChan
 
 Dokumentasi teknis project DeFi Staking + Health Data di atas **Internet Computer (ICP)**, dengan integrasi **Fetch AI Agent** dan **ASI1 LLM**.
 
@@ -7,7 +7,7 @@ Dokumentasi teknis project DeFi Staking + Health Data di atas **Internet Compute
 # Product Requirement Document (PRD)
 
 **Nama Project**  
-DeHealth Staking dApp on ICP
+MedicaChan
 
 **Deskripsi**  
 Aplikasi Web3 berbasis **ICP** untuk pencatatan kesehatan harian dengan kontrol privasi.

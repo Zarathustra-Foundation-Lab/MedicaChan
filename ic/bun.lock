@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "dehealth",
+      "name": "MedicaChan",
     },
     "src/frontend": {
       "name": "dehealt",
