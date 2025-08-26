@@ -1,0 +1,11 @@
+{
+    "temperature": 36.9,
+    "blood_pressure": "120/80",
+    "heart_rate": 72,
+    "respiration_rate": 18,
+    "sleep_hours": 7.5,
+    "mood": "Happy",
+    "activity_level": "Moderate",
+    "note": "Feeling good today",
+    "photo_url": "https://dummyimage.com/600x400/000/fff&text=Checkup+Photo"
+}

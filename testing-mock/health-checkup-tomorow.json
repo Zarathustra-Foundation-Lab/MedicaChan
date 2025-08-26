@@ -1,0 +1,11 @@
+{
+    "temperature": 37.4,
+    "blood_pressure": "130/85",
+    "heart_rate": 80,
+    "respiration_rate": 20,
+    "sleep_hours": 6,
+    "mood": "Stressed",
+    "activity_level": "Low",
+    "note": "Slight headache",
+    "photo_url": null
+}

@@ -5,166 +5,65 @@ from uagents_core.contrib.protocols.chat import (
     ChatMessage,
     ChatAcknowledgement,
     TextContent,
-    StartSessionContent,
+    StartSessionContent,    
 )
+
+
 from uagents import Agent, Context, Protocol
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from uuid import uuid4
 
+import os
+from dotenv import load_dotenv
+
+# load env
+load_dotenv()
+
+# get env
+
+
 # ASI1 API settings
-ASI1_API_KEY = "your_asi1_api_key"  # Replace with your ASI1 key
+ASI1_API_KEY = os.getenv("ASI1_API_KEY") or "your_asi1_api_key"  # Ganti dengan API key dari asi1.ai
 ASI1_BASE_URL = "https://api.asi1.ai/v1"
 ASI1_HEADERS = {
     "Authorization": f"Bearer {ASI1_API_KEY}",
     "Content-Type": "application/json"
 }
 
-CANISTER_ID = "uzt4z-lp777-77774-qaabq-cai" # Replace with your canister ID
+# ICP local backend config
+CANISTER_ID = "uqqxf-5h777-77774-qaaaa-cai"  # ganti sesuai canister ID
 BASE_URL = "http://127.0.0.1:4943"
-
 HEADERS = {
     "Host": f"{CANISTER_ID}.localhost",
     "Content-Type": "application/json"
 }
 
-# Function definitions for ASI1 function calling
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_current_fee_percentiles",
-            "description": "Gets the 100 fee percentiles measured in millisatoshi/byte.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_balance",
-            "description": "Returns the balance of a given Bitcoin address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "The Bitcoin address to check."
-                    }
-                },
-                "required": ["address"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_utxos",
-            "description": "Returns the UTXOs of a given Bitcoin address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "The Bitcoin address to fetch UTXOs for."
-                    }
-                },
-                "required": ["address"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send",
-            "description": "Sends satoshis from this canister to a specified address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "destinationAddress": {
-                        "type": "string",
-                        "description": "The destination Bitcoin address."
-                    },
-                    "amountInSatoshi": {
-                        "type": "number",
-                        "description": "Amount to send in satoshis."
-                    }
-                },
-                "required": ["destinationAddress", "amountInSatoshi"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_p2pkh_address",
-            "description": "Returns the P2PKH address of this canister.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "dummy_test",
-            "description": "Runs the dummy test endpoint.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    }
-]
+print("ASI1 API Key: ", ASI1_API_KEY)
+print("\n")
+print("Canister ID Running: ", CANISTER_ID)
 
+# =====================================================================
+# TOOLS DEFINITIONS (mapping Rust canister functions ke tool ASI1)
+# =====================================================================
+from tools import tools
+
+# =====================================================================
+# CALL ICP ENDPOINT
+# =====================================================================
 async def call_icp_endpoint(func_name: str, args: dict):
-    if func_name == "get_current_fee_percentiles":
-        url = f"{BASE_URL}/get-current-fee-percentiles"
-        response = requests.post(url, headers=HEADERS, json={})
-    elif func_name == "get_balance":
-        url = f"{BASE_URL}/get-balance"
-        response = requests.post(url, headers=HEADERS, json={"address": args["address"]})
-    elif func_name == "get_utxos":
-        url = f"{BASE_URL}/get-utxos"
-        response = requests.post(url, headers=HEADERS, json={"address": args["address"]})
-    elif func_name == "send":
-        url = f"{BASE_URL}/send"
-        response = requests.post(url, headers=HEADERS, json=args)
-    elif func_name == "get_p2pkh_address":
-        url = f"{BASE_URL}/get-p2pkh-address"
-        response = requests.post(url, headers=HEADERS, json={})
-    elif func_name == "dummy_test":
-        url = f"{BASE_URL}/dummy-test"
-        response = requests.post(url, headers=HEADERS, json={})
-    else:
-        raise ValueError(f"Unsupported function call: {func_name}")
+    # mapping nama function jadi endpoint REST
+    url = f"{BASE_URL}/{func_name.replace('_', '-')}"
+    response = requests.post(url, headers=HEADERS, json=args)
     response.raise_for_status()
     return response.json()
 
+# =====================================================================
+# PROCESS QUERY (user -> asi1 -> tools -> icp -> asi1 -> user)
+# =====================================================================
 async def process_query(query: str, ctx: Context) -> str:
     try:
-        # Step 1: Initial call to ASI1 with user query and tools
-        initial_message = {
-            "role": "user",
-            "content": query
-        }
+        # Step 1: Initial call ke ASI1
+        initial_message = {"role": "user", "content": query}
         payload = {
             "model": "asi1-mini",
             "messages": [initial_message],
@@ -180,29 +79,26 @@ async def process_query(query: str, ctx: Context) -> str:
         response.raise_for_status()
         response_json = response.json()
 
-        # Step 2: Parse tool calls from response
+        # Step 2: Ambil tool calls
         tool_calls = response_json["choices"][0]["message"].get("tool_calls", [])
         messages_history = [initial_message, response_json["choices"][0]["message"]]
 
         if not tool_calls:
-            return "I couldn't determine what Bitcoin information you're looking for. Please try rephrasing your question."
+            return "⚠️ I couldn’t determine which health action to take. Please try rephrasing."
 
-        # Step 3: Execute tools and format results
+        # Step 3: Eksekusi tools
         for tool_call in tool_calls:
             func_name = tool_call["function"]["name"]
             arguments = json.loads(tool_call["function"]["arguments"])
             tool_call_id = tool_call["id"]
 
-            ctx.logger.info(f"Executing {func_name} with arguments: {arguments}")
+            ctx.logger.info(f"Executing {func_name} with args: {arguments}")
 
             try:
                 result = await call_icp_endpoint(func_name, arguments)
                 content_to_send = json.dumps(result)
             except Exception as e:
-                error_content = {
-                    "error": f"Tool execution failed: {str(e)}",
-                    "status": "failed"
-                }
+                error_content = {"error": f"Tool exec failed: {str(e)}"}
                 content_to_send = json.dumps(error_content)
 
             tool_result_message = {
@@ -212,7 +108,7 @@ async def process_query(query: str, ctx: Context) -> str:
             }
             messages_history.append(tool_result_message)
 
-        # Step 4: Send results back to ASI1 for final answer
+        # Step 4: Final call ke ASI1 untuk natural answer
         final_payload = {
             "model": "asi1-mini",
             "messages": messages_history,
@@ -227,15 +123,17 @@ async def process_query(query: str, ctx: Context) -> str:
         final_response.raise_for_status()
         final_response_json = final_response.json()
 
-        # Step 5: Return the model's final answer
         return final_response_json["choices"][0]["message"]["content"]
 
     except Exception as e:
         ctx.logger.error(f"Error processing query: {str(e)}")
-        return f"An error occurred while processing your request: {str(e)}"
+        return f"❌ Error: {str(e)}"
 
+# =====================================================================
+# AGENT SETUP
+# =====================================================================
 agent = Agent(
-    name='test-ICP-agent',
+    name='health-ICP-agent',
     port=8001,
     mailbox=True
 )
@@ -252,12 +150,11 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
 
         for item in msg.content:
             if isinstance(item, StartSessionContent):
-                ctx.logger.info(f"Got a start session message from {sender}")
+                ctx.logger.info(f"Start session from {sender}")
                 continue
             elif isinstance(item, TextContent):
-                ctx.logger.info(f"Got a message from {sender}: {item.text}")
+                ctx.logger.info(f"Msg from {sender}: {item.text}")
                 response_text = await process_query(item.text, ctx)
-                ctx.logger.info(f"Response text: {response_text}")
                 response = ChatMessage(
                     timestamp=datetime.now(timezone.utc),
                     msg_id=uuid4(),
@@ -265,21 +162,19 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
                 )
                 await ctx.send(sender, response)
             else:
-                ctx.logger.info(f"Got unexpected content from {sender}")
+                ctx.logger.info(f"Unexpected content from {sender}")
     except Exception as e:
-        ctx.logger.error(f"Error handling chat message: {str(e)}")
+        ctx.logger.error(f"Error handling message: {str(e)}")
         error_response = ChatMessage(
             timestamp=datetime.now(timezone.utc),
             msg_id=uuid4(),
-            content=[TextContent(type="text", text=f"An error occurred: {str(e)}")]
+            content=[TextContent(type="text", text=f"❌ Error: {str(e)}")]
         )
         await ctx.send(sender, error_response)
 
 @chat_proto.on_message(model=ChatAcknowledgement)
-async def handle_chat_acknowledgement(ctx: Context, sender: str, msg: ChatAcknowledgement):
-    ctx.logger.info(f"Received acknowledgement from {sender} for message {msg.acknowledged_msg_id}")
-    if msg.metadata:
-        ctx.logger.info(f"Metadata: {msg.metadata}")
+async def handle_chat_ack(ctx: Context, sender: str, msg: ChatAcknowledgement):
+    ctx.logger.info(f"Ack from {sender} for {msg.acknowledged_msg_id}")
 
 agent.include(chat_proto)
 
@@ -288,45 +183,18 @@ if __name__ == "__main__":
 
 
 """
-Queries for /get-balance
-What's the balance of address tb1qexample1234567890?
+🧾 Queries for /register_user
+Register me as Budi, 25 years old, male, height 170, weight 65.
 
-Can you check how many bitcoins are in tb1qabcde000001234567?
+🧾 Queries for /add_checkup
+Add checkup: temp 37.2, blood pressure 120/80, HR 75, mood happy.
 
-Show me the balance of this Bitcoin wallet: tb1qtestwalletxyz.
+🧾 Queries for /publish_checkup
+Publish my last checkup with ID=abcd-1234.
 
-🧾 Queries for /get-utxos
-What UTXOs are available for address tb1qexampleutxo0001?
+🧾 Queries for /get_user_profile
+Show my profile with principal=aaaa-bbbb-cccc-dddd.
 
-List unspent outputs for tb1qunspentoutputs111.
-
-Do I have any unspent transactions for tb1qutxotest9999?
-
-🧾 Queries for /get-current-fee-percentiles
-What are the current Bitcoin fee percentiles?
-
-Show me the latest fee percentile distribution.
-
-How much are the Bitcoin network fees right now?
-
-🧾 Queries for /get-p2pkh-address
-What is my canister's P2PKH address?
-
-Generate a Bitcoin address for me.
-
-Give me a Bitcoin address I can use to receive coins.
-
-🧾 Queries for /send
-Send 10,000 satoshis to tb1qreceiver000111.
-
-Transfer 50000 sats to tb1qsimplewalletabc.
-
-I want to send 120000 satoshis to tb1qdonationaddress001.
-
-🧾 General/Dummy Test
-Run the dummy test endpoint.
-
-Can I see a test response?
-
-Hit the dummy-test route to make sure it works.
+🧾 Queries for /get_public_data
+Show me all public health checkups.
 """
