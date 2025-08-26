@@ -12,14 +12,15 @@ import { createActor } from "../../../declarations/backend";
  * @returns ActorSubclass<_SERVICE> yang siap digunakan
  */
 export const useService = (
-  canisterId: string,
+  canisterId: string = "uqqxf-5h777-77774-qaaaa-cai",
   agentOptions?: Record<string, unknown>
 ) => {
   return useMemo(() => {
     // Tentukan host berdasarkan jaringan
-    const host = process.env.DFX_NETWORK === "ic"
-      ? "https://ic0.app" // Mainnet
-      : "http://127.0.0.1:4943"; // Localnet
+    const host =
+      process.env.DFX_NETWORK === "ic"
+        ? "https://ic0.app" // Mainnet
+        : "http://127.0.0.1:4943"; // Localnet
 
     // Buat agent dengan konfigurasi yang sesuai
     const agent = new HttpAgent({

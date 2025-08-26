@@ -17,7 +17,11 @@ import { Principal } from "@dfinity/principal";
  * @returns Object dengan data, loading state, dan error
  */
 export const useUserProfile = (principal: string) => {
-  const service = useService(process.env.BACKEND_CANISTER_ID || "");
+  const BACKEND_CANISTER_ID =
+    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
+    "uqqxf-5h777-77774-qaaaa-cai";
+
+  const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +60,11 @@ export const useUserProfile = (principal: string) => {
  * @returns Fungsi mutate dan state loading & error
  */
 export const useAddCheckup = () => {
-  const service = useService(process.env.BACKEND_CANISTER_ID || "");
+  const BACKEND_CANISTER_ID =
+    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
+    "uqqxf-5h777-77774-qaaaa-cai";
+
+  const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +104,11 @@ export const useAddCheckup = () => {
  * @returns Object dengan data, loading state, dan error
  */
 export const useGetPrivateData = (principal: string) => {
-  const service = useService(process.env.BACKEND_CANISTER_ID || "");
+  const BACKEND_CANISTER_ID =
+    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
+    "uqqxf-5h777-77774-qaaaa-cai";
+
+  const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<HealthCheckup[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +147,11 @@ export const useGetPrivateData = (principal: string) => {
  * @returns Object dengan data, loading state, dan error
  */
 export const useGetPublicData = () => {
-  const service = useService(process.env.BACKEND_CANISTER_ID || "");
+  const BACKEND_CANISTER_ID =
+    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
+    "uqqxf-5h777-77774-qaaaa-cai";
+
+  const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<HealthCheckup[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -169,7 +185,11 @@ export const useGetPublicData = () => {
  * @returns Fungsi mutate dan state loading & error
  */
 export const usePublishCheckup = () => {
-  const service = useService(process.env.BACKEND_CANISTER_ID || "");
+  const BACKEND_CANISTER_ID =
+    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
+    "uqqxf-5h777-77774-qaaaa-cai";
+
+  const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -208,7 +228,11 @@ export const usePublishCheckup = () => {
  * @returns Fungsi mutate dan state loading & error
  */
 export const useRegisterUser = () => {
-  const service = useService(process.env.BACKEND_CANISTER_ID || "");
+  const BACKEND_CANISTER_ID =
+    process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
+    "uqqxf-5h777-77774-qaaaa-cai";
+
+  const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

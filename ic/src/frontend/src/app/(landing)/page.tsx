@@ -11,16 +11,20 @@ import Stats from "./components/stats";
 import { motion } from "motion/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export default function LandingPage() {
-  const router = useRouter();
-  const { isAuth } = useAuth();
+  // const router = useRouter();
+  // const { isAuth } = useAuth();
 
-  useEffect(() => {
-    if (isAuth === true) {
-      router.replace("/register");
-    }
-  }, [isAuth, router]);
+  // useEffect(() => {
+  //   if (isAuth === true) {
+  //     router.replace("/register");
+  //   }
+  // }, [isAuth, router]);
+
+
+  useAuthRedirect();
 
   return (
     <>
