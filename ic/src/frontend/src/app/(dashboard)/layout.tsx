@@ -8,18 +8,18 @@ import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { isAuth, userProfileData } = useAuthRedirect();
+  // const { isAuth, userProfileData } = useAuthRedirect();
 
-  if (isAuth && userProfileData)
-    return (
-      <SidebarProvider>
-        <AppSidebar />
-        <main className="flex flex-col flex-1 min-w-0">
-          <AppHeader />
-          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-            {children}
-          </div>
-        </main>
-      </SidebarProvider>
-    );
+  // if (isAuth && userProfileData)
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="flex flex-col flex-1 min-w-0">
+        <AppHeader />
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          {children}
+        </div>
+      </main>
+    </SidebarProvider>
+  );
 }

@@ -7,55 +7,48 @@ import Summary from "./components/summary";
 import RecentCheckup from "./components/recent-checkup";
 import HealthInsight from "./components/health-insight";
 import { useAuth } from "@/providers/auth-provider";
-import { useEffect } from "react";
+import { useUserProfile } from "../../../hooks/use-backend";
+import { useEffect, useMemo } from "react";
 
-// Mock data
-const dashboardData = {
-  totalCheckups: 15,
-  publicCheckups: 8,
-  privateCheckups: 7,
-  totalRewards: 130,
-  recentCheckups: [
-    {
-      id: "checkup-003",
-      date: "2024-08-23",
-      mood: "Happy",
-      isPublic: false,
-      temperature: 36.9,
-      bloodPressure: "118/78",
-    },
-    {
-      id: "checkup-002",
-      date: "2024-08-22",
-      mood: "Stressed",
-      isPublic: true,
-      temperature: 37.2,
-      bloodPressure: "125/85",
-    },
-    {
-      id: "checkup-001",
-      date: "2024-08-21",
-      mood: "Normal",
-      isPublic: false,
-      temperature: 36.8,
-      bloodPressure: "120/80",
-    },
-  ],
-};
-
+/**
+ * Halaman Dashboard utama yang menampilkan ringkasan data kesehatan pengguna
+ * Mengintegrasikan data dari backend melalui useUserProfile hook
+ */
 export default function DashboardPage() {
   const router = useRouter();
+  const { principal } = useAuth();
+  const {
+    data: userProfileData,
+    loading,
+    error,
+  } = useUserProfile(principal?.toString() ?? "");
 
-  const { callFunction, principal } = useAuth();
+  // Transformasi data dari backend ke format yang dibutuhkan komponen dashboard
+  const dashboardData = useMemo(() => {
+    if (!userProfileData?.health_data) return null;
 
-  const getUserProfile = async () => {
-    // const userProfile = await callFunction?.http_request({});
-    // console.log(userProfile);
-  };
+    const publicData = userProfileData.health_data.filter(
+      (item) => item.is_public
+    );
+    const privateData = userProfileData.health_data.filter(
+      (item) => !item.is_public
+    );
 
-  useEffect(() => {
-    getUserProfile();
-  }, []);
+    return {
+      totalCheckups: userProfileData.health_data.length,
+      publicCheckups: publicData.length,
+      privateCheckups: privateData.length,
+      totalRewards: Number(userProfileData.total_rewards),
+      recentCheckups: userProfileData.health_data.slice(0, 3).map((item) => ({
+        id: item.id,
+        date: new Date(Number(item.date) * 1000).toISOString().split("T")[0],
+        mood: item.data.mood,
+        isPublic: item.is_public,
+        temperature: item.data.temperature,
+        bloodPressure: item.data.blood_pressure,
+      })),
+    };
+  }, [userProfileData]);
 
   return (
     <div>
@@ -69,11 +62,29 @@ export default function DashboardPage() {
         btnIcon={<Plus />}
       />
       <div className="p-5 space-y-5">
-        <Summary dashboardData={dashboardData} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <RecentCheckup dashboardData={dashboardData} />
-          <HealthInsight />
-        </div>
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-8 bg-muted rounded w-1/2"></div>
+                <div className="h-10 w-10 bg-muted rounded-full"></div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-destructive p-4 border border-destructive/20 rounded">
+            Error loading data: {error}
+          </div>
+        ) : dashboardData ? (
+          <>
+            <Summary dashboardData={dashboardData} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <RecentCheckup dashboardData={dashboardData} />
+              <HealthInsight />
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

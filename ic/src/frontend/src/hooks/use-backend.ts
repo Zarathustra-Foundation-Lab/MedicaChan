@@ -19,7 +19,7 @@ import { Principal } from "@dfinity/principal";
 export const useUserProfile = (principal: string) => {
   const BACKEND_CANISTER_ID =
     process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uqqxf-5h777-77774-qaaaa-cai";
+    "uxrrr-q7777-77774-qaaaq-cai";
 
   const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<User | null>(null);
@@ -39,6 +39,8 @@ export const useUserProfile = (principal: string) => {
           setError(result.Err);
         }
       } catch (err: unknown) {
+        console.log({ err });
+
         if (err instanceof Error) {
           setError(err.message);
         } else {
@@ -62,7 +64,7 @@ export const useUserProfile = (principal: string) => {
 export const useAddCheckup = () => {
   const BACKEND_CANISTER_ID =
     process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uqqxf-5h777-77774-qaaaa-cai";
+    "uxrrr-q7777-77774-qaaaq-cai";
 
   const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
@@ -106,7 +108,7 @@ export const useAddCheckup = () => {
 export const useGetPrivateData = (principal: string) => {
   const BACKEND_CANISTER_ID =
     process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uqqxf-5h777-77774-qaaaa-cai";
+    "uxrrr-q7777-77774-qaaaq-cai";
 
   const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<HealthCheckup[] | null>(null);
@@ -149,7 +151,7 @@ export const useGetPrivateData = (principal: string) => {
 export const useGetPublicData = () => {
   const BACKEND_CANISTER_ID =
     process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uqqxf-5h777-77774-qaaaa-cai";
+    "uxrrr-q7777-77774-qaaaq-cai";
 
   const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<HealthCheckup[] | null>(null);
@@ -187,7 +189,7 @@ export const useGetPublicData = () => {
 export const usePublishCheckup = () => {
   const BACKEND_CANISTER_ID =
     process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uqqxf-5h777-77774-qaaaa-cai";
+    "uxrrr-q7777-77774-qaaaq-cai";
 
   const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
@@ -230,7 +232,9 @@ export const usePublishCheckup = () => {
 export const useRegisterUser = () => {
   const BACKEND_CANISTER_ID =
     process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID ||
-    "uqqxf-5h777-77774-qaaaa-cai";
+    "uxrrr-q7777-77774-qaaaq-cai";
+
+  console.log(BACKEND_CANISTER_ID);
 
   const service = useService(BACKEND_CANISTER_ID);
   const [loading, setLoading] = useState(false);
@@ -261,6 +265,9 @@ export const useRegisterUser = () => {
           chronicDiseases !== undefined ? [chronicDiseases] : [],
           allergies !== undefined ? [allergies] : []
         );
+
+        console.log({ result });
+
         if ("Ok" in result) {
           return result.Ok;
         } else {

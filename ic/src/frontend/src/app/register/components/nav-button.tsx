@@ -6,10 +6,14 @@ const NavButton = ({
   currentStep,
   prevStep,
   handleSubmit,
+  disabled = false,
+  buttonText = "Complete Registration",
 }: {
   currentStep: number;
   prevStep: () => void;
   handleSubmit?: () => void;
+  disabled?: boolean;
+  buttonText?: string;
 }) => {
   return (
     <div className="flex justify-between">
@@ -23,9 +27,9 @@ const NavButton = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
       ) : (
-        <Button onClick={handleSubmit}>
+        <Button onClick={handleSubmit} disabled={disabled}>
           <Check className="h-4 w-4" />
-          Complete Registration
+          {buttonText}
         </Button>
       )}
     </div>

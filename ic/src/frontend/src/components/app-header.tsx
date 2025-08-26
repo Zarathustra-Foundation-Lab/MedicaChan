@@ -22,13 +22,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/providers/auth-provider";
-
-const user = {
-  name: "John Doe",
-};
+import { useUserProfile } from "@/hooks/use-backend";
 
 export const AppHeader = () => {
-  const { logout } = useAuth();
+  const { logout, principal } = useAuth();
+  const { data } = useUserProfile(principal?.toString() || "");
 
   const [showModalLogout, setShowModalLogout] = useState(false);
 
@@ -51,7 +49,7 @@ export const AppHeader = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton>
-              <User /> {user?.name}
+              <User /> {data?.full_name}
               <ChevronDown className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>

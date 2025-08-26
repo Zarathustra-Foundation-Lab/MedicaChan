@@ -3,6 +3,9 @@ import { useRegistrationDataStore } from "../hooks/use-registration-data";
 import NavButton from "./nav-button";
 import { CircleCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/auth-provider";
+
+import { useRegisterUser } from "../../../hooks/use-backend";
 
 const ReviewConfirm = ({
   currentStep,
@@ -12,12 +15,35 @@ const ReviewConfirm = ({
   prevStep: () => void;
 }) => {
   const router = useRouter();
-
+  const { principal } = useAuth();
+  const { mutate: registerUser, loading, error } = useRegisterUser();
   const { data } = useRegistrationDataStore();
 
-  const handleSubmit = () => {
-    console.log(data);
-    router.push("/");
+  /**
+   * Menangani proses submit registrasi pengguna
+   * Memanggil fungsi registerUser untuk menyimpan data pengguna ke backend
+   * Menangani loading state, error, dan redirect setelah sukses
+   */
+  const handleSubmit = async () => {
+    if (!principal) return;
+
+    try {
+      await registerUser(
+        principal.toText(),
+        data.fullName,
+        parseInt(data.age),
+        data.gender,
+        data.weight ? parseFloat(data.weight) : undefined,
+        data.height ? parseFloat(data.height) : undefined,
+        data.chronicDiseases || undefined,
+        data.allergies || undefined
+      );
+      // Redirect ke dashboard setelah registrasi berhasil
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Registration failed:", err);
+      // Error akan ditampilkan melalui state error dari useRegisterUser
+    }
   };
 
   return (
@@ -72,10 +98,17 @@ const ReviewConfirm = ({
           in your dashboard.
         </AlertDescription>
       </Alert>
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription className="text-red-600">{error}</AlertDescription>
+        </Alert>
+      )}
       <NavButton
         currentStep={currentStep}
         prevStep={prevStep}
         handleSubmit={handleSubmit}
+        disabled={loading}
+        buttonText={loading ? "Creating Profile..." : "Complete Registration"}
       />
     </div>
   );

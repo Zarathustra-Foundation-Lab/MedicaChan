@@ -9,8 +9,7 @@ import HowItWorks from "./components/how-it-works";
 import { Navbar } from "./components/navbar";
 import Stats from "./components/stats";
 import { motion } from "motion/react";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+
 import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export default function LandingPage() {
@@ -22,7 +21,6 @@ export default function LandingPage() {
   //     router.replace("/register");
   //   }
   // }, [isAuth, router]);
-
 
   useAuthRedirect();
 

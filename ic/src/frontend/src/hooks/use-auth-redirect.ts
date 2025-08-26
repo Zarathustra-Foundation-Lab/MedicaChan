@@ -6,6 +6,7 @@ import { useUserProfile } from "./use-backend";
 export function useAuthRedirect() {
   const { isAuth, identity, principal } = useAuth();
   const { data: userProfileData } = useUserProfile(principal?.toText() || "");
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -21,15 +22,15 @@ export function useAuthRedirect() {
   useEffect(() => {
     // Redirect logic untuk path /register
     if (pathname === "/register") {
-      // Jika belum login, redirect ke identity provider
-      if (!isAuth || !identity || !principal) {
-        router.push(`${identityProvider}?provider=${origin}&target=/register`);
-        return;
-      }
-
       // Jika sudah login dan punya data user, redirect ke dashboard
       if (userProfileData) {
         router.push("/dashboard");
+        return;
+      }
+
+      // Jika belum login, redirect ke identity provider
+      if (!isAuth || !identity || !principal) {
+        router.push(`${identityProvider}?provider=${origin}&target=/register`);
         return;
       }
     }
@@ -65,7 +66,16 @@ export function useAuthRedirect() {
         return;
       }
     }
-  }, [isAuth, identity, principal, userProfileData, router, pathname]);
+  }, [
+    isAuth,
+    identity,
+    principal,
+    userProfileData,
+    router,
+    pathname,
+    identityProvider,
+    origin,
+  ]);
 
   return { isAuth, identity, principal, userProfileData, router, pathname };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, FileText, Heart, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProgressHeader from "./components/progress-header";
 import { FormBasicInfo } from "./components/form-basic-info";
 import {
@@ -15,7 +15,11 @@ import StepNav from "./components/step-nav";
 import { FormPhysicalInfo } from "./components/form-physical-info";
 import { FormMedicalHistory } from "./components/form-medical-history";
 import ReviewConfirm from "./components/review-confirm";
-import { useAuthRedirect } from "@/hooks/use-auth-redirect";
+
+import { useRouter } from "next/navigation";
+// import { useAuthRedirect } from "@/hooks/use-auth-redirect";
+import { useAuth } from "@/providers/auth-provider";
+import { useUserProfile } from "@/hooks/use-backend";
 
 export const registerSteps = [
   {
@@ -45,6 +49,8 @@ export const registerSteps = [
 ];
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [currentStep, setCurrentStep] = useState(1);
 
   const nextStep = () => {
@@ -61,9 +67,15 @@ export default function RegisterPage() {
 
   const progress = (currentStep / registerSteps.length) * 100;
 
-  const { isAuth, principal } = useAuthRedirect();
+  const { principal, isAuth } = useAuth();
 
-  if (isAuth && principal)
+  const { data } = useUserProfile(principal?.toString() || "");
+
+  if (data != null && isAuth) {
+    router.push("/dashboard");
+  }
+
+  if (principal)
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-2xl space-y-4">
@@ -108,4 +120,8 @@ export default function RegisterPage() {
         </div>
       </div>
     );
+  else {
+    router.push("/");
+    return;
+  }
 }

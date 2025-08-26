@@ -2,7 +2,6 @@
   "canisters": {
     "backend": {
       "candid": "src/backend/backend.did",
-      "main": "src/backend/lib.rs",
       "package": "backend",
       "type": "rust"
     },
