@@ -12,9 +12,11 @@ import { createActor } from "../../../declarations/backend";
  * @returns ActorSubclass<_SERVICE> yang siap digunakan
  */
 export const useService = (
-  canisterId: string = "uqqxf-5h777-77774-qaaaa-cai",
+  canisterId: string = "u6s2n-gx777-77774-qaaba-cai",
   agentOptions?: Record<string, unknown>
 ) => {
+  console.log({ canisterId });
+
   return useMemo(() => {
     // Tentukan host berdasarkan jaringan
     const host =

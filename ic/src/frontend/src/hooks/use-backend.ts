@@ -14,6 +14,8 @@ import { Principal } from "@dfinity/principal";
 const BACKEND_CANISTER_ID =
   process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID || "u6s2n-gx777-77774-qaaba-cai";
 
+// console.log({ BACKEND_CANISTER_ID_FE: BACKEND_CANISTER_ID });
+
 /**
  * Custom hook untuk mengambil profil pengguna
  * @param principal - Principal ID pengguna

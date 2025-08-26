@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/providers/auth-provider";
 import CTABanner from "./components/cta-banner";
 import Features from "./components/features";
 import Footer from "./components/footer";
@@ -11,24 +10,27 @@ import Stats from "./components/stats";
 import { motion } from "motion/react";
 
 import { useRouter } from "next/navigation";
+
 import { useEffect } from "react";
+
+import { useAuth } from "@/providers/auth-provider";
 import { useUserProfile } from "@/hooks/use-backend";
 
 export default function LandingPage() {
   const router = useRouter();
   const { isAuth, principal } = useAuth();
 
-  const { data } = useUserProfile(principal?.toString() || "");
+  const { data, error } = useUserProfile(principal?.toString() || "");
 
   useEffect(() => {
-    if (data?.full_name && data.id) {
+    if (isAuth && principal && data?.full_name && data.id && !error) {
       router.push("/dashboard");
-    } else {
+    } else if (isAuth && principal && !data?.full_name) {
       if (isAuth === true && principal) {
         router.replace("/register");
       }
     }
-  }, [isAuth, router]);
+  }, [isAuth, data?.full_name, data?.id, router, principal, error]);
 
   return (
     <>

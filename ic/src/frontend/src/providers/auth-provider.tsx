@@ -4,7 +4,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { Identity, ActorSubclass } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
-import { createActor, canisterId } from "../../../declarations/backend";
+import {
+  createActor,
+  canisterId as canisterIdGenerated,
+} from "../../../declarations/backend";
 import { _SERVICE } from "../../../declarations/backend/backend.did";
 
 interface AuthContextType {
@@ -35,6 +38,9 @@ const defaultOptions = {
     identityProvider,
   },
 };
+
+const canisterId =
+  process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID || "u6s2n-gx777-77774-qaaba-cai";
 
 export const useAuthClient = (options = defaultOptions) => {
   const [isAuth, setIsAuth] = useState(false);
