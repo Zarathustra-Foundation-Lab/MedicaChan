@@ -31,7 +31,7 @@ ASI1_HEADERS = {
 }
 
 # ICP local backend config
-CANISTER_ID = "uqqxf-5h777-77774-qaaaa-cai"  # ganti sesuai canister ID
+CANISTER_ID = os.getenv("CANISTER_ID") or "your_canister_id"  # ganti sesuai canister ID
 BASE_URL = "http://127.0.0.1:4943"
 HEADERS = {
     "Host": f"{CANISTER_ID}.localhost",
@@ -50,11 +50,22 @@ from tools import tools
 # =====================================================================
 # CALL ICP ENDPOINT
 # =====================================================================
-async def call_icp_endpoint(func_name: str, args: dict):
+async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
     # mapping nama function jadi endpoint REST
     url = f"{BASE_URL}/{func_name.replace('_', '-')}"
+    
+    # debug url
+    ctx.logger.info(f"Calling ICP endpoint: {url}")
+    
+    # debug body
+    ctx.logger.info(f"Calling ICP endpoint with body: {json.dumps(args, indent=2)}")
+
     response = requests.post(url, headers=HEADERS, json=args)
     response.raise_for_status()
+    
+    # debug response
+    ctx.logger.info(f"Calling ICP endpoint with response: {json.dumps(response.json(), indent=2)}")
+
     return response.json()
 
 # =====================================================================
@@ -63,14 +74,51 @@ async def call_icp_endpoint(func_name: str, args: dict):
 async def process_query(query: str, ctx: Context) -> str:
     try:
         # Step 1: Initial call ke ASI1
-        initial_message = {"role": "user", "content": query}
+        # Add explicit instruction for tool usage
+        enhanced_query = f"""
+        You are a health assistant with access to health management tools. 
+        When users ask about registering, adding checkups, viewing profiles, or accessing health data, 
+        you MUST use the appropriate tools.
+        
+        User query: {query}
+        
+        Available tools:
+        - register_user: for new user registration
+        - add_checkup: for recording health vitals
+        - get_user_profile: for viewing user info
+        - get_public_data: for public health data
+        - get_private_data: for private health data
+        - publish_checkup: for making checkups public
+        - reward_user: for adding reward points
+        
+        Variable Parameter:
+        - principal: define as [GENERATE_UUID] if defined you can skip this variable
+
+        Please analyze the user's request and use the appropriate tool(s) and Focus return which tools to use.
+        Dont ask about user principal IDs.
+        """
+        system_message = {
+            "role": "system",
+            "content": (
+                "You are a health assistant with access to function tools. "
+                "You MUST call tools when the user asks to register, add checkups, view profiles, or access health data. "
+                "Always prefer tool calls over free-text answers when applicable."
+                "Principal IDs are UUID strings, if Blank generate new UUID"
+            ),
+        }
+        
+        initial_message = {"role": "user", "content": enhanced_query}
         payload = {
             "model": "asi1-mini",
-            "messages": [initial_message],
+            "messages": [system_message, initial_message],
             "tools": tools,
             "temperature": 0.7,
             "max_tokens": 1024
         }
+        
+        # DEBUG: Log the payload being sent
+        ctx.logger.info(f"Sending payload: {json.dumps(payload, indent=2)}")
+        
         response = requests.post(
             f"{ASI1_BASE_URL}/chat/completions",
             headers=ASI1_HEADERS,
@@ -78,13 +126,16 @@ async def process_query(query: str, ctx: Context) -> str:
         )
         response.raise_for_status()
         response_json = response.json()
+        
+        # DEBUG: Log the full response
+        ctx.logger.info(f"ASI1 Response: {json.dumps(response_json, indent=2)}")
 
         # Step 2: Ambil tool calls
         tool_calls = response_json["choices"][0]["message"].get("tool_calls", [])
         messages_history = [initial_message, response_json["choices"][0]["message"]]
 
         if not tool_calls:
-            return "⚠️ I couldn’t determine which health action to take. Please try rephrasing."
+            return "⚠️ I couldn't determine which health action to take. Please try rephrasing."
 
         # Step 3: Eksekusi tools
         for tool_call in tool_calls:
@@ -95,7 +146,7 @@ async def process_query(query: str, ctx: Context) -> str:
             ctx.logger.info(f"Executing {func_name} with args: {arguments}")
 
             try:
-                result = await call_icp_endpoint(func_name, arguments)
+                result = await call_icp_endpoint(ctx, func_name, arguments)
                 content_to_send = json.dumps(result)
             except Exception as e:
                 error_content = {"error": f"Tool exec failed: {str(e)}"}
@@ -133,7 +184,7 @@ async def process_query(query: str, ctx: Context) -> str:
 # AGENT SETUP
 # =====================================================================
 agent = Agent(
-    name='health-ICP-agent',
+    name='MedicaChan-ICP-agent',
     port=8001,
     mailbox=True
 )
