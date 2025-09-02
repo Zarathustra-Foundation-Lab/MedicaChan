@@ -1,10 +1,7 @@
 use std::{cell::RefCell, collections::HashMap};
 
 use candid::CandidType;
-use ic_cdk::{
-    api::{management_canister::main::raw_rand, time},
-    export_candid,
-};
+use ic_cdk::api::{management_canister::main::raw_rand, time};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 
@@ -212,6 +209,203 @@ pub fn get_user_history(principal: Principal) -> Result<Vec<HealthCheckup>, Stri
     })
 }
 
+// --------------- Tambahan untuk expose REST-like API ---------------
+
+use ic_http_certification::{HttpRequest, HttpResponse, HttpUpdateResponse};
+
+// Request DTOs untuk HTTP API
+#[derive(Deserialize)]
+pub struct RegisterUserJson {
+    pub principal: String,
+    pub full_name: String,
+    pub age: u32,
+    pub gender: String,
+    pub height_cm: Option<f32>,
+    pub weight_kg: Option<f32>,
+    pub allergies: Option<String>,
+    pub chronic_diseases: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct AddCheckupJson {
+    pub principal: String,
+    pub data: HealthData,
+}
+
+#[derive(Deserialize)]
+pub struct PublishCheckupJson {
+    pub principal: String,
+    pub checkup_id: String,
+}
+
+#[derive(Deserialize)]
+pub struct RewardUserJson {
+    pub principal: String,
+    pub points: u64,
+}
+
+#[derive(Deserialize)]
+pub struct GetUserJson {
+    pub principal: String,
+}
+
+// Query entry point (untuk handshake, GET/OPTIONS)
+#[ic_cdk::query]
+fn http_request(_req: HttpRequest) -> HttpResponse<'static> {
+    HttpResponse::builder().with_upgrade(true).build()
+}
+
+// Update entry point (routing POST request ke handler sesuai url)
+#[ic_cdk::update]
+async fn http_request_update(req: HttpRequest<'_>) -> HttpUpdateResponse<'_> {
+    let url = req.url();
+
+    if url.contains("/register-user") {
+        handle_register_user(req)
+    } else if url.contains("/add-checkup") {
+        handle_add_checkup(req).await
+    } else if url.contains("/publish-checkup") {
+        handle_publish_checkup(req)
+    } else if url.contains("/reward-user") {
+        handle_reward_user(req)
+    } else if url.contains("/get-profile") {
+        handle_get_profile(req)
+    } else if url.contains("/get-public-data") {
+        handle_get_public_data()
+    } else if url.contains("/get-private-data") {
+        handle_get_private_data(req)
+    } else if url.contains("/get-history") {
+        handle_get_user_history(req)
+    } else {
+        error_response("Unknown endpoint")
+    }
+}
+
+// ---------------- Handlers ----------------
+
+fn handle_register_user(req: HttpRequest) -> HttpUpdateResponse<'static> {
+    match serde_json::from_slice::<RegisterUserJson>(req.body()) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+            match register_user(
+                principal,
+                r.full_name,
+                r.age,
+                r.gender,
+                r.height_cm,
+                r.weight_kg,
+                r.allergies,
+                r.chronic_diseases,
+            ) {
+                Ok(user) => json_response(&user),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+async fn handle_add_checkup(req: HttpRequest<'_>) -> HttpUpdateResponse<'_> {
+    // Clone body biar aman di async context
+    let body_bytes = req.body().to_vec();
+
+    match serde_json::from_slice::<AddCheckupJson>(&body_bytes) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+
+            // Sekarang bisa await karena handler async
+            match add_checkup(principal, r.data).await {
+                Ok(checkup) => json_response(&checkup),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+fn handle_publish_checkup(req: HttpRequest) -> HttpUpdateResponse<'static> {
+    match serde_json::from_slice::<PublishCheckupJson>(req.body()) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+            match publish_checkup(principal, r.checkup_id) {
+                Ok(_) => json_response(&serde_json::json!({"status":"ok"})),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+fn handle_reward_user(req: HttpRequest) -> HttpUpdateResponse<'static> {
+    match serde_json::from_slice::<RewardUserJson>(req.body()) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+            match reward_user(principal, r.points) {
+                Ok(user) => json_response(&user),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+fn handle_get_profile(req: HttpRequest) -> HttpUpdateResponse<'static> {
+    match serde_json::from_slice::<GetUserJson>(req.body()) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+            match get_user_profile(principal) {
+                Ok(user) => json_response(&user),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+fn handle_get_public_data() -> HttpUpdateResponse<'static> {
+    let data = get_public_data();
+    json_response(&data)
+}
+
+fn handle_get_private_data(req: HttpRequest) -> HttpUpdateResponse<'static> {
+    match serde_json::from_slice::<GetUserJson>(req.body()) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+            match get_private_data(principal) {
+                Ok(data) => json_response(&data),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+fn handle_get_user_history(req: HttpRequest) -> HttpUpdateResponse<'static> {
+    match serde_json::from_slice::<GetUserJson>(req.body()) {
+        Ok(r) => {
+            let principal = Principal::from_text(r.principal).unwrap();
+            match get_user_history(principal) {
+                Ok(data) => json_response(&data),
+                Err(e) => error_response(&e),
+            }
+        }
+        Err(_) => error_response("Invalid JSON body"),
+    }
+}
+
+// ---------------- Helpers ----------------
+
+fn json_response<T: Serialize>(data: &T) -> HttpUpdateResponse<'static> {
+    HttpResponse::builder()
+        .with_body(serde_json::to_vec(data).unwrap_or_else(|_| b"{}".to_vec()))
+        .build_update()
+}
+
+fn error_response(msg: &str) -> HttpUpdateResponse<'static> {
+    HttpResponse::builder()
+        .with_body(format!(r#"{{"error":"{}"}}"#, msg).into_bytes())
+        .build_update()
+}
 
 // export_candid!();
 

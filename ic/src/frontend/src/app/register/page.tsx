@@ -74,9 +74,9 @@ export default function RegisterPage() {
   if (data != null && isAuth) {
     router.push("/dashboard");
     return;
+  } else if (!principal && !data) {
+    return;
   }
-
-  // if (principal) return <>{principal.toString()}</>;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

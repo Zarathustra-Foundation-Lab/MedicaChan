@@ -14,48 +14,68 @@ import { Principal } from "@dfinity/principal";
 const BACKEND_CANISTER_ID =
   process.env.NEXT_PUBLIC_BACKEND_CANISTER_ID || "u6s2n-gx777-77774-qaaba-cai";
 
-// console.log({ BACKEND_CANISTER_ID_FE: BACKEND_CANISTER_ID });
-
 /**
- * Custom hook untuk mengambil profil pengguna
+ * Custom hook untuk mengambil profil pengguna dengan retry otomatis
  * @param principal - Principal ID pengguna
- * @returns Object dengan data, loading state, dan error
+ * @returns Object dengan data, loading state, dan fungsi refetch
  */
 export const useUserProfile = (principal: string) => {
   const service = useService(BACKEND_CANISTER_ID);
   const [data, setData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!service || !principal) return;
-      setLoading(true);
+  const fetchProfile = useCallback(async () => {
+    if (!service || !principal) return;
+    
+    // Jangan set error di state, karena ingin menyembunyikannya dari UI
+    setLoading(true);
+    
+    // Konfigurasi retry
+    const maxRetries = 3;
+    const baseDelay = 1000; // 1 detik
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const principalId = Principal.fromText(principal);
         const result = await service.get_user_profile(principalId);
+        
         if ("Ok" in result) {
           setData(result.Ok);
-        } else {
-          setError(result.Err);
+          setLoading(false);
+          return; // Berhasil, keluar dari fungsi
         }
+        
+        // Jika gagal dengan error dari backend, catat di console tapi jangan set ke state
+        console.warn(`Attempt ${attempt} failed with backend error:`, result.Err);
+        
       } catch (err: unknown) {
-        console.log({ err });
-
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unknown error occurred");
+        console.log({ attempt, err });
+        
+        // Jika ini bukan retry terakhir, tunggu sebelum mencoba lagi
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1); // exponential backoff
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
         }
-      } finally {
-        setLoading(false);
+        
+        // Jika semua retry gagal, catat error tapi jangan set ke state
+        if (err instanceof Error) {
+          console.error("Final fetch failed after retries:", err.message);
+        } else {
+          console.error("Final fetch failed after retries with unknown error");
+        }
       }
-    };
-
-    fetchProfile();
+    }
+    
+    // Setelah semua retry gagal, set loading ke false tapi jangan set error
+    setLoading(false);
   }, [service, principal]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  return { data, loading, refetch: fetchProfile };
 };
 
 /**

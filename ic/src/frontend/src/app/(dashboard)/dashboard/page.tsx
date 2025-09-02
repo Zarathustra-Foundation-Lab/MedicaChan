@@ -2,7 +2,7 @@
 
 import { TitleContent } from "@/components/title-content";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Summary from "./components/summary";
 import RecentCheckup from "./components/recent-checkup";
 import HealthInsight from "./components/health-insight";
@@ -16,12 +16,24 @@ import { useEffect, useMemo } from "react";
  */
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { principal } = useAuth();
+
   const {
     data: userProfileData,
     loading,
-    error,
+    refetch,
   } = useUserProfile(principal?.toString() ?? "");
+
+  // Trigger refetch saat navigasi terjadi
+  useEffect(() => {
+    const fetchData = async () => {
+      if (principal) {
+        await refetch();
+      }
+    };
+    fetchData();
+  }, [principal, searchParams, refetch]);
 
   // Transformasi data dari backend ke format yang dibutuhkan komponen dashboard
   const dashboardData = useMemo(() => {
@@ -39,14 +51,81 @@ export default function DashboardPage() {
       publicCheckups: publicData.length,
       privateCheckups: privateData.length,
       totalRewards: Number(userProfileData.total_rewards),
-      recentCheckups: userProfileData.health_data.slice(0, 3).map((item) => ({
-        id: item.id,
-        date: new Date(Number(item.date) * 1000).toISOString().split("T")[0],
-        mood: item.data.mood,
-        isPublic: item.is_public,
-        temperature: item.data.temperature,
-        bloodPressure: item.data.blood_pressure,
-      })),
+      recentCheckups: userProfileData.health_data.slice(0, 3).map((item) => {
+        // Debug: Log data tanggal mentah untuk troubleshooting
+        console.log(
+          "Raw date value:",
+          item.date,
+          "Type:",
+          typeof item.date,
+          "Value of item.date:",
+          item.date
+        );
+
+        // Handle BigInt secara eksplisit - ini adalah masalah utama
+        let timestamp: number;
+        if (typeof item.date === "bigint") {
+          // Convert BigInt to number (in nanoseconds) and convert to milliseconds
+          timestamp = Number(item.date) / 1_000_000;
+        } else if (typeof item.date === "string") {
+          timestamp = parseInt(item.date) / 1_000_000; // Asumsi dalam nanoseconds jika string
+        } else {
+          timestamp = Number(item.date) / 1_000_000; // Untuk number, asumsi nanoseconds
+        }
+
+        // Konversi dari nanoseconds ke milliseconds untuk Date object JavaScript
+        const jsTimestamp = timestamp;
+
+        console.log(
+          "Converted timestamp:",
+          jsTimestamp,
+          "Is NaN:",
+          isNaN(jsTimestamp)
+        );
+
+        let date = "Invalid Date";
+
+        // Validasi dengan range yang lebih realistis untuk timestamp JavaScript
+        if (
+          !isNaN(jsTimestamp) &&
+          jsTimestamp > 0 &&
+          jsTimestamp < 8640000000000
+        ) {
+          // ~273.000 tahun
+          try {
+            // Konversi ke Date object dan format ke tanggal human-readable
+            const dateObj = new Date(jsTimestamp);
+            // Verifikasi objek Date valid sebelum format
+            if (!isNaN(dateObj.getTime())) {
+              date = new Intl.DateTimeFormat("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              }).format(dateObj);
+            } else {
+              console.log("Invalid Date object for timestamp:", jsTimestamp);
+            }
+          } catch (error) {
+            console.error("Error formatting date:", error);
+          }
+        } else {
+          console.log(
+            "Invalid timestamp for item:",
+            item.id,
+            "value:",
+            jsTimestamp
+          );
+        }
+
+        return {
+          id: item.id,
+          date: date,
+          mood: item.data.mood,
+          isPublic: item.is_public,
+          temperature: item.data.temperature,
+          bloodPressure: item.data.blood_pressure,
+        };
+      }),
     };
   }, [userProfileData]);
 
@@ -72,16 +151,12 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        ) : error ? (
-          <div className="text-destructive p-4 border border-destructive/20 rounded">
-            Error loading data: {error}
-          </div>
         ) : dashboardData ? (
           <>
             <Summary dashboardData={dashboardData} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <RecentCheckup dashboardData={dashboardData} />
-              <HealthInsight />
+              {/* <HealthInsight /> */}
             </div>
           </>
         ) : null}

@@ -31,7 +31,7 @@ ASI1_HEADERS = {
 }
 
 # ICP local backend config
-CANISTER_ID = os.getenv("BACKEND_CANISTER_ID") or "your_canister_id"  # ganti sesuai canister ID
+CANISTER_ID = os.getenv("CANISTER_ID") or "your_canister_id"  # ganti sesuai canister ID
 BASE_URL = "http://127.0.0.1:4943"
 HEADERS = {
     "Host": f"{CANISTER_ID}.localhost",
@@ -53,7 +53,6 @@ from tools import tools
 async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
     # mapping nama function jadi endpoint REST
     url = f"{BASE_URL}/{func_name.replace('_', '-')}"
-    # url = f"{BASE_URL}??canisterId={CANISTER_ID}/{func_name}"
     
     # debug url
     ctx.logger.info(f"Calling ICP endpoint: {url}")
@@ -72,28 +71,46 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
 # =====================================================================
 # PROCESS QUERY (user -> asi1 -> tools -> icp -> asi1 -> user)
 # =====================================================================
+import random
+
 async def process_query(query: str, ctx: Context) -> str:
     try:
+        enhanced_query = f"""
+        You are MedicaChan AI, a friendly health assistant with access to health management tools.
+
+        Behavior rules:
+        1. When users ask about registering, adding checkups, viewing profiles, publishing health data, or rewarding users, 
+           you MUST call the appropriate tool(s).
+        2. If the tool requires information that the user did not provide, politely ask for it.
+        3. If a tool call fails OR no tool applies, respond naturally: ask clarifying questions, 
+           suggest helpful options, or answer empathetically.
+        4. If request not health-related, respond as a conversational assistant.
+        5. Never ask about 'principal IDs'. Treat them as UUID strings, generate one if missing.
+        6. Prefer tool calls over free-text when relevant.
+
+        User query: {query}
+        """
+
         system_message = {
             "role": "system",
             "content": (
-                "You are a health assistant with access to function tools. "
-                "You MUST ALWAYS use one of the available tools when the user asks "
-                "to register, add checkups, view profiles, or access health data. "
-                "If the query is vague (like hello/hi/halo), DEFAULT to calling get_public_data. "
-                "Never reply with 'I couldn't determine' — always choose an action."
+                "You are MedicaChan AI, a health assistant with tool access. "
+                "Use tools when possible. "
+                "If no tool call is possible, respond conversationally (empathetic, natural, helpful). "
+                "Ask clarifying questions when needed."
             ),
         }
-        initial_message = {"role": "user", "content": query}
+
+        initial_message = {"role": "user", "content": enhanced_query}
         payload = {
             "model": "asi1-mini",
             "messages": [system_message, initial_message],
             "tools": tools,
             "temperature": 0.7,
-            "max_tokens": 1024
+            "max_tokens": 1024,
         }
 
-        ctx.logger.info(f"Sending payload: {json.dumps(payload, indent=2)}")
+        # Step 1: Initial call
         response = requests.post(
             f"{ASI1_BASE_URL}/chat/completions",
             headers=ASI1_HEADERS,
@@ -101,52 +118,53 @@ async def process_query(query: str, ctx: Context) -> str:
         )
         response.raise_for_status()
         response_json = response.json()
-        ctx.logger.info(f"ASI1 Response: {json.dumps(response_json, indent=2)}")
 
-        # --- Ambil tool calls ---
         tool_calls = response_json["choices"][0]["message"].get("tool_calls", [])
         messages_history = [initial_message, response_json["choices"][0]["message"]]
 
-        # --- Fallback kalau kosong ---
-        if not tool_calls:
-            ctx.logger.warning("No tool_calls detected → fallback to get_public_data")
-            try:
-                result = await call_icp_endpoint(ctx, "get_public_data", {})
-                return json.dumps(result, default=str)
-            except Exception as e:
-                return f"⚠️ AI gave no tool call and fallback failed: {str(e)}"
-
-        # --- Eksekusi tool(s) ---
+        # Step 2: Eksekusi tool jika ada
         for tool_call in tool_calls:
             func_name = tool_call["function"]["name"]
             arguments = json.loads(tool_call["function"]["arguments"])
             tool_call_id = tool_call["id"]
 
             ctx.logger.info(f"Executing {func_name} with args: {arguments}")
+
             try:
                 result = await call_icp_endpoint(ctx, func_name, arguments)
-                content_to_send = json.dumps(result, default=str)
+                content_to_send = json.dumps(result)
             except Exception as e:
                 content_to_send = json.dumps({"error": f"Tool exec failed: {str(e)}"})
 
             tool_result_message = {
                 "role": "tool",
                 "tool_call_id": tool_call_id,
-                "content": content_to_send
+                "content": content_to_send,
             }
             messages_history.append(tool_result_message)
 
-        # --- Final call balik ke ASI1 untuk natural language ---
+        # Step 3: Kalau tidak ada tool_call → kasih hardcoded response
+        if not tool_calls:
+            fallback_responses = [
+                "Aku belum paham maksudmu 🤔. Mau dicatat sebagai checkup kesehatan?",
+                "Kamu bisa daftar dulu, menambahkan checkup, atau melihat data kesehatan. Mau coba yang mana?",
+                "Apakah kamu ingin saya catat gejala ini dalam checkup harian? 😊",
+                "Sepertinya datanya belum ada. Mau saya bantu registrasi dulu?",
+                "Kalau ini soal kesehatan, bisa kasih detail suhu tubuh, tekanan darah, atau gejala lain?"
+            ]
+            return random.choice(fallback_responses)
+
+        # Step 4: Kalau ada tool_call → lanjut final call seperti biasa
         final_payload = {
             "model": "asi1-mini",
             "messages": messages_history,
             "temperature": 0.7,
-            "max_tokens": 1024
+            "max_tokens": 1024,
         }
         final_response = requests.post(
             f"{ASI1_BASE_URL}/chat/completions",
             headers=ASI1_HEADERS,
-            json=final_payload
+            json=final_payload,
         )
         final_response.raise_for_status()
         final_response_json = final_response.json()
@@ -156,6 +174,7 @@ async def process_query(query: str, ctx: Context) -> str:
     except Exception as e:
         ctx.logger.error(f"Error processing query: {str(e)}")
         return f"❌ Error: {str(e)}"
+
 
 # =====================================================================
 # AGENT SETUP

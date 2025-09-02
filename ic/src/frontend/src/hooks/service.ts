@@ -15,14 +15,12 @@ export const useService = (
   canisterId: string = "u6s2n-gx777-77774-qaaba-cai",
   agentOptions?: Record<string, unknown>
 ) => {
-  console.log({ canisterId });
-
   return useMemo(() => {
     // Tentukan host berdasarkan jaringan
     const host =
       process.env.DFX_NETWORK === "ic"
         ? "https://ic0.app" // Mainnet
-        : "http://127.0.0.1:4943"; // Localnet
+        : `http://127.0.0.1:4943`; // Localnet
 
     // Buat agent dengan konfigurasi yang sesuai
     const agent = new HttpAgent({

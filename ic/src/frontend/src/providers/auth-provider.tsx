@@ -23,10 +23,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const network = process.env.DFX_NETWORK;
+
+const host =
+  process.env.DFX_NETWORK === "ic"
+    ? "https://ic0.app" // Mainnet
+    : `http://127.0.0.1:4943`; // Localnet
+
 const identityProvider =
   network === "ic"
     ? "https://identity.ic0.app" // Mainnet
-    : "http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943"; // Local
+    : `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943`; // Local
 
 const defaultOptions = {
   createOptions: {
@@ -65,6 +71,7 @@ export const useAuthClient = (options = defaultOptions) => {
     const actor = createActor(canisterId, {
       agentOptions: {
         identity,
+        host,
       },
     });
 

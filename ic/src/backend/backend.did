@@ -2,9 +2,8 @@ type HealthCheckup = record {
   id : text;
   is_public : bool;
   data : HealthData;
-  date : nat64
+  date : nat64;
 };
-
 type HealthData = record {
   photo_url : opt text;
   sleep_hours : opt float32;
@@ -14,9 +13,26 @@ type HealthData = record {
   note : text;
   activity_level : opt text;
   respiration_rate : opt nat32;
-  heart_rate : nat32
+  heart_rate : nat32;
 };
-
+type HttpRequest = record {
+  url : text;
+  method : text;
+  body : blob;
+  headers : vec record { text; text };
+  certificate_version : opt nat16;
+};
+type HttpResponse = record {
+  body : blob;
+  headers : vec record { text; text };
+  upgrade : opt bool;
+  status_code : nat16;
+};
+type HttpUpdateResponse = record {
+  body : blob;
+  headers : vec record { text; text };
+  status_code : nat16;
+};
 type Result = variant { Ok : HealthCheckup; Err : text };
 type Result_1 = variant { Ok : vec HealthCheckup; Err : text };
 type Result_2 = variant { Ok : User; Err : text };
@@ -31,25 +47,26 @@ type User = record {
   health_data : vec HealthCheckup;
   height_cm : opt float32;
   allergies : opt text;
-  full_name : text
+  full_name : text;
 };
-
 service : {
   add_checkup : (principal, HealthData) -> (Result);
   get_private_data : (principal) -> (Result_1) query;
   get_public_data : () -> (vec HealthCheckup) query;
   get_user_history : (principal) -> (Result_1) query;
   get_user_profile : (principal) -> (Result_2) query;
+  http_request : (HttpRequest) -> (HttpResponse) query;
+  http_request_update : (HttpRequest) -> (HttpUpdateResponse);
   publish_checkup : (principal, text) -> (Result_3);
   register_user : (
-    principal,
-    text,
-    nat32,
-    text,
-    opt float32,
-    opt float32,
-    opt text,
-    opt text
-  ) -> (Result_2);
-  reward_user : (principal, nat64) -> (Result_2)
+      principal,
+      text,
+      nat32,
+      text,
+      opt float32,
+      opt float32,
+      opt text,
+      opt text,
+    ) -> (Result_2);
+  reward_user : (principal, nat64) -> (Result_2);
 }

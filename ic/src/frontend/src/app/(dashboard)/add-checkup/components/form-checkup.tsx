@@ -132,8 +132,8 @@ export function FormCheckup() {
           sleep_hours: values.sleepHours ? [parseFloat(values.sleepHours)] : [],
           mood: values.mood,
           activity_level: values.activityLevel,
-          note: values.notes ? [values.notes] : [], // Properti 'note' sesuai dengan tipe HealthData
-          photo_url: values.photoUrl ? [values.photoUrl] : [], // Mengikuti pola opsi [] | [string]
+          note: values.notes ? [values.notes] : [""], // Properti 'note' sesuai dengan tipe HealthData
+          photo_url: values.photoUrl ? [values.photoUrl] : [""], // Mengikuti pola opsi [] | [string]
           timestamp: new Date().toISOString(),
           is_private: isPrivate,
         };
@@ -161,7 +161,7 @@ export function FormCheckup() {
         // Reset form setelah submit berhasil
         form.reset();
       } catch (err) {
-        console.error("Failed to submit checkup:", error);
+        console.error("Failed to submit checkup:", err);
         // Error akan ditangani oleh hook useAddCheckup
       }
   }
@@ -185,9 +185,7 @@ export function FormCheckup() {
         </Card>
 
         <form
-          onSubmit={() => {
-            form.handleSubmit(onSubmit);
-          }}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col gap-6"
         >
           {/* Vital Signs */}
@@ -437,74 +435,78 @@ export function FormCheckup() {
           </Card>
 
           {/* Privacy Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="size-4 text-primary" />
-                Privacy Settings
-              </CardTitle>
-              <CardDescription>
-                Control who can access your health data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  {isPrivate ? (
-                    <EyeOff className="h-5 w-5 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-primary" />
-                  )}
-                  <div>
-                    <p className="font-medium">
-                      {isPrivate ? "Private Data" : "Public Data"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {isPrivate
-                        ? "Only you can see this data"
-                        : "Data will be available for AI analysis and you'll earn 10 DHT tokens"}
-                    </p>
+          <>
+            <Card className="opacity-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="size-4 text-primary" />
+                  Privacy Settings (Coming Soon)
+                </CardTitle>
+                <CardDescription>
+                  Control who can access your health data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {isPrivate ? (
+                      <EyeOff className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-primary" />
+                    )}
+                    <div>
+                      <p className="font-medium">
+                        {isPrivate ? "Private Data" : "Public Data"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {isPrivate
+                          ? "Only you can see this data"
+                          : "Data will be available for AI analysis and you'll earn 10 DHT tokens"}
+                      </p>
+                    </div>
                   </div>
+                  <Button
+                    type="button"
+                    disabled
+                    variant={isPrivate ? "outline" : "default"}
+                    onClick={() => setIsPrivate(!isPrivate)}
+                  >
+                    {isPrivate ? "Make Public" : "Make Private"}
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant={isPrivate ? "outline" : "default"}
-                  onClick={() => setIsPrivate(!isPrivate)}
-                >
-                  {isPrivate ? "Make Public" : "Make Private"}
-                </Button>
-              </div>
-              {!isPrivate && (
-                <Alert className="mt-4" variant="success">
-                  <DollarSign />
-                  <AlertDescription className="font-semibold text-emerald-600">
-                    Publishing this data will earn you 10 DHT tokens as a reward
-                    for contributing to the health database.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <Save className="size-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="size-4 mr-2" />
-                  Save {isPrivate ? "Private" : "Public"} Checkup
-                </>
-              )}
-            </Button>
-          </div>
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>Error: {error}</AlertDescription>
-            </Alert>
-          )}
+                {!isPrivate && (
+                  <Alert className="mt-4" variant="success">
+                    <DollarSign />
+                    <AlertDescription className="font-semibold text-emerald-600">
+                      Publishing this data will earn you 10 DHT tokens as a
+                      reward for contributing to the health database.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Save className="size-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="size-4 mr-2" />
+                    Save {isPrivate ? "Private" : "Public"} Checkup
+                  </>
+                )}
+              </Button>
+            </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>Error: {error}</AlertDescription>
+              </Alert>
+            )}
+          </>
         </form>
       </div>
     </Form>
