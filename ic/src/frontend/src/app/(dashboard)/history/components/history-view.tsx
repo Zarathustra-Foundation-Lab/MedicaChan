@@ -30,79 +30,12 @@ import {
   Eye,
   EyeOff,
   MoreHorizontal,
-  Trash2,
   Search,
   Thermometer,
 } from "lucide-react";
-
-// Mock data based on user_history.json
-const historyData = [
-  {
-    id: "checkup-003",
-    date: "2024-08-23",
-    data: {
-      temperature: 36.9,
-      bloodPressure: "118/78",
-      heartRate: 72,
-      respirationRate: 19,
-      sleepHours: 8.0,
-      mood: "Happy",
-      activityLevel: "High",
-      note: "Felt very energetic today.",
-      photoUrl: null,
-    },
-    isPublic: false,
-  },
-  {
-    id: "checkup-002",
-    date: "2024-08-22",
-    data: {
-      temperature: 37.2,
-      bloodPressure: "125/85",
-      heartRate: 80,
-      respirationRate: 20,
-      sleepHours: 6.0,
-      mood: "Stressed",
-      activityLevel: "Low",
-      note: "Felt a bit tired.",
-      photoUrl: "https://ipfs.io/ipfs/examplehash/photo.png",
-    },
-    isPublic: true,
-  },
-  {
-    id: "checkup-001",
-    date: "2024-08-21",
-    data: {
-      temperature: 36.8,
-      bloodPressure: "120/80",
-      heartRate: 75,
-      respirationRate: 18,
-      sleepHours: 7.5,
-      mood: "Normal",
-      activityLevel: "Moderate",
-      note: "No issues today.",
-      photoUrl: null,
-    },
-    isPublic: false,
-  },
-];
-
-interface CheckupRecord {
-  id: string;
-  date: string;
-  data: {
-    temperature: number;
-    bloodPressure: string;
-    heartRate: number;
-    respirationRate: number;
-    sleepHours: number;
-    mood: string;
-    activityLevel: string;
-    note: string;
-    photoUrl: string | null;
-  };
-  isPublic: boolean;
-}
+import { useAuth } from "@/providers/auth-provider";
+import { useGetUserHistory } from "@/hooks/use-backend";
+import { usePublishCheckup } from "@/hooks/use-backend";
 
 const moodEmojis: Record<string, string> = {
   Happy: "😊",
@@ -113,64 +46,151 @@ const moodEmojis: Record<string, string> = {
   Energetic: "⚡",
 };
 
+// Konversi BigInt timestamp (nanodetik) ke format tanggal yang dapat dibaca
+const formatTimestamp = (timestamp: bigint | number | string): string => {
+  // Konversi ke number dalam milidetik
+  let timestampMs: number;
+  if (typeof timestamp === 'bigint') {
+    timestampMs = Number(timestamp) / 1_000_000; // nanodetik ke milidetik
+  } else if (typeof timestamp === 'string') {
+    timestampMs = parseInt(timestamp) / 1_000_000;
+  } else {
+    timestampMs = timestamp / 1_000_000;
+  }
+
+  // Validasi dan format
+  if (!isNaN(timestampMs) && timestampMs > 0 && timestampMs < 8640000000000) {
+    try {
+      const dateObj = new Date(timestampMs);
+      if (!isNaN(dateObj.getTime())) {
+        return new Intl.DateTimeFormat('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        }).format(dateObj);
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error);
+    }
+  }
+  return "Invalid Date";
+};
+
 export function HistoryView() {
-  const [records, setRecords] = useState<CheckupRecord[]>(historyData);
+  const { principal } = useAuth();
+  const { data: historyData, loading, error, refetch: refetchHistory } = useGetUserHistory(principal?.toString() ?? "");
+  const { mutate: publishCheckup, loading: publishing } = usePublishCheckup();
+
+  // State untuk filter
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "public" | "private">(
     "all"
   );
   const [sortBy, setSortBy] = useState<"date" | "mood" | "temperature">("date");
 
-  const togglePrivacy = (id: string) => {
-    setRecords((prev) =>
-      prev.map((record) =>
-        record.id === id ? { ...record, isPublic: !record.isPublic } : record
-      )
+  const togglePrivacy = async (id: string) => {
+    if (!principal) return;
+    
+    try {
+      await publishCheckup(principal.toString(), id);
+      // Refetch data setelah publish/unpublish
+      refetchHistory();
+    } catch (error) {
+      console.error("Failed to toggle privacy:", error);
+    }
+  };
+
+  // Tampilkan loading state
+  if (loading) {
+    return (
+      <div className="space-y-5 p-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+              <div className="h-8 bg-muted rounded w-1/2"></div>
+              <div className="h-10 w-10 bg-muted rounded-full"></div>
+            </div>
+          ))}
+        </div>
+      </div>
     );
+  }
 
-    const record = records.find((r) => r.id === id);
-    if (record) {
-      alert(
-        `Checkup ${record.isPublic ? "made private" : "published publicly"}! ${
-          !record.isPublic ? "You earned 10 DHT tokens." : ""
-        }`
-      );
+  // Tampilkan error jika ada
+  if (error) {
+    return (
+      <div className="p-5">
+        <div className="text-destructive p-4 border border-destructive/20 rounded">
+          Error loading data: {error}
+        </div>
+      </div>
+    );
+  }
+
+  // Pastikan data ada
+  if (!historyData || historyData.length === 0) {
+    return (
+      <div className="space-y-5 p-5">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Heart className="h-12 w-12 text-primary mb-4" />
+            <h3 className="text-lg font-medium mb-2">
+              No health data found
+            </h3>
+            <p className="text-muted-foreground text-center">
+              No health checkup records found for this user
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Filter dan sort data
+  const filteredRecords = historyData.filter((record) => {
+    // Filter berdasarkan tipe
+    const typeMatch = 
+      filterType === "all" || 
+      (filterType === "public" && record.is_public) || 
+      (filterType === "private" && !record.is_public);
+
+    // Filter berdasarkan pencarian
+    const searchLower = searchTerm.toLowerCase();
+    const searchMatch = 
+      !searchTerm ||
+      record.data.mood.toLowerCase().includes(searchLower) ||
+      record.data.note.toLowerCase().includes(searchLower) ||
+      formatTimestamp(record.date).toLowerCase().includes(searchLower);
+
+    return typeMatch && searchMatch;
+  }).sort((a, b) => {
+    // Sortir berdasarkan kriteria pilihan
+    if (sortBy === "date") {
+      const aTime = typeof a.date === 'bigint' ? Number(a.date) / 1_000_000 : Number(a.date) / 1_000_000;
+      const bTime = typeof b.date === 'bigint' ? Number(b.date) / 1_000_000 : Number(b.date) / 1_000_000;
+      return bTime - aTime; // Newest first
     }
-  };
-
-  const deleteRecord = (id: string) => {
-    if (confirm("Are you sure you want to delete this checkup record?")) {
-      setRecords((prev) => prev.filter((record) => record.id !== id));
+    
+    if (sortBy === "temperature") {
+      return b.data.temperature - a.data.temperature;
     }
-  };
+    
+    if (sortBy === "mood") {
+      return a.data.mood.localeCompare(b.data.mood);
+    }
+    
+    return 0;
+  });
 
-  const filteredRecords = records
-    .filter((record) => {
-      if (filterType === "public") return record.isPublic;
-      if (filterType === "private") return !record.isPublic;
-      return true;
-    })
-    .filter(
-      (record) =>
-        record.data.mood.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.data.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.date.includes(searchTerm)
-    )
-    .sort((a, b) => {
-      if (sortBy === "date")
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      if (sortBy === "temperature")
-        return b.data.temperature - a.data.temperature;
-      if (sortBy === "mood") return a.data.mood.localeCompare(b.data.mood);
-      return 0;
-    });
-
+  // Hitung statistik
   const stats = {
-    total: records.length,
-    public: records.filter((r) => r.isPublic).length,
-    private: records.filter((r) => !r.isPublic).length,
-    avgTemperature:
-      records.reduce((sum, r) => sum + r.data.temperature, 0) / records.length,
+    total: filteredRecords.length,
+    public: filteredRecords.filter((r) => r.is_public).length,
+    private: filteredRecords.filter((r) => !r.is_public).length,
+    avgTemperature: filteredRecords.length > 0 
+      ? filteredRecords.reduce((sum, r) => sum + r.data.temperature, 0) / filteredRecords.length
+      : 0,
   };
 
   return (
@@ -291,9 +311,7 @@ export function HistoryView() {
                 No checkup records found
               </h3>
               <p className="text-muted-foreground text-center">
-                {searchTerm || filterType !== "all"
-                  ? "Try adjusting your search or filter criteria"
-                  : "Start by adding your first health checkup"}
+                {searchTerm ? "Try adjusting your search criteria" : "No records match your filters"}
               </p>
             </CardContent>
           </Card>
@@ -308,19 +326,14 @@ export function HistoryView() {
                     </div>
                     <div className="flex flex-col gap-1">
                       <CardTitle className="text-primary font-semibold">
-                        {new Date(record.date).toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        {formatTimestamp(record.date)}
                       </CardTitle>
                       <CardDescription>ID: {record.id}</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 justify-between w-full md:w-auto">
-                    <Badge variant={record.isPublic ? "default" : "secondary"}>
-                      {record.isPublic ? (
+                    <Badge variant={record.is_public ? "default" : "secondary"}>
+                      {record.is_public ? (
                         <>
                           <Eye className="mr-1 h-3 w-3" />
                           Public
@@ -339,20 +352,12 @@ export function HistoryView() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {/* <DropdownMenuItem
-                          onClick={() =>
-                            alert(
-                              "Edit functionality would be implemented here"
-                            )
-                          }
-                        >
-                          <Edit className="size-4" />
-                          Edit
-                        </DropdownMenuItem> */}
+                        {/* Disable toggle privacy saat publishing */}
                         <DropdownMenuItem
                           onClick={() => togglePrivacy(record.id)}
+                          disabled={publishing}
                         >
-                          {record.isPublic ? (
+                          {record.is_public ? (
                             <>
                               <EyeOff className="size-4" />
                               Make Private
@@ -363,13 +368,6 @@ export function HistoryView() {
                               Publish Public
                             </>
                           )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => deleteRecord(record.id)}
-                        >
-                          <Trash2 className="size-4" />
-                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -390,15 +388,15 @@ export function HistoryView() {
                       </p>
                       <p className="text-sm">
                         <strong>Blood Pressure:</strong>{" "}
-                        {record.data.bloodPressure} mmHg
+                        {record.data.blood_pressure} mmHg
                       </p>
                       <p className="text-sm">
-                        <strong>Heart Rate:</strong> {record.data.heartRate} BPM
+                        <strong>Heart Rate:</strong> {record.data.heart_rate} BPM
                       </p>
-                      {record.data.respirationRate && (
+                      {record.data.respiration_rate && (
                         <p className="text-sm">
                           <strong>Respiration:</strong>{" "}
-                          {record.data.respirationRate}/min
+                          {record.data.respiration_rate}/min
                         </p>
                       )}
                     </div>
@@ -417,11 +415,11 @@ export function HistoryView() {
                         </span>
                       </p>
                       <p className="text-sm">
-                        <strong>Activity:</strong> {record.data.activityLevel}
+                        <strong>Activity:</strong> {record.data.activity_level}
                       </p>
-                      {record.data.sleepHours && (
+                      {record.data.sleep_hours && (
                         <p className="text-sm">
-                          <strong>Sleep:</strong> {record.data.sleepHours}h
+                          <strong>Sleep:</strong> {record.data.sleep_hours}h
                         </p>
                       )}
                     </div>
@@ -435,7 +433,7 @@ export function HistoryView() {
                     <p className="text-sm text-muted-foreground">
                       {record.data.note || "No additional notes"}
                     </p>
-                    {record.data.photoUrl && (
+                    {record.data.photo_url && (
                       <p className="text-sm text-emerald-600">
                         📷 Photo attached
                       </p>
