@@ -25,3 +25,6 @@ dist/
 .env
 
 fetch/.venv
+
+.vscode
+private_keys.json
