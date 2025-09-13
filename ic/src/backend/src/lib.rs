@@ -209,6 +209,41 @@ pub fn get_user_history(principal: Principal) -> Result<Vec<HealthCheckup>, Stri
     })
 }
 
+#[ic_cdk::update]
+pub fn update_profile_user(
+    principal: Principal,
+    full_name: String,
+    age: u32,
+    gender: String,
+    height_cm: Option<f32>,
+    weight_kg: Option<f32>,
+    allergies: Option<String>,
+    chronic_diseases: Option<String>,
+) -> Result<User, String> {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        let user = users
+            .get_mut(&principal)
+            .ok_or("User not found".to_string())?;
+
+        // Validasi minimal input
+        if full_name.trim().is_empty() {
+            return Err("Full name cannot be empty".to_string());
+        }
+
+        // Update field-by-field
+        user.full_name = full_name;
+        user.age = age;
+        user.gender = gender;
+        user.height_cm = height_cm;
+        user.weight_kg = weight_kg;
+        user.allergies = allergies;
+        user.chronic_diseases = chronic_diseases;
+
+        Ok(user.clone())
+    })
+}
+
 // --------------- Tambahan untuk expose REST-like API ---------------
 
 use ic_http_certification::{HttpRequest, HttpResponse, HttpUpdateResponse};

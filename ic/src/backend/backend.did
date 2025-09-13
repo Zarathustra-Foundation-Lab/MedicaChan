@@ -69,4 +69,14 @@ service : {
       opt text,
     ) -> (Result_2);
   reward_user : (principal, nat64) -> (Result_2);
+  update_profile_user : (
+      principal,
+      text,
+      nat32,
+      text,
+      opt float32,
+      opt float32,
+      opt text,
+      opt text,
+    ) -> (Result_2);
 }

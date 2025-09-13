@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  useGetPublicData,
+  useGetPrivateData,
+  useUpdateProfile,
+  useUserProfile,
+  useGetUserHistory,
+} from "@/hooks/use-backend";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -34,6 +41,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/providers/auth-provider";
 
 // Mock data based on user_profile.json
 const initialUserData = {
@@ -71,6 +79,16 @@ interface UserProfile {
 }
 
 export function ProfileView() {
+  const { principal } = useAuth();
+  const { mutate: updateProfile, loading: isUpdating } = useUpdateProfile();
+  const { refetch: refetchProfile, data: userDefaultData } = useUserProfile(
+    principal?.toString() || ""
+  );
+
+  const { data: userHistoryCheckup } = useGetUserHistory(
+    principal?.toString() || ""
+  );
+
   const [userData, setUserData] = useState<UserProfile>(initialUserData);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,12 +96,29 @@ export function ProfileView() {
   const handleSave = async () => {
     setIsSaving(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await updateProfile(
+        initialUserData.id,
+        userData.fullName,
+        userData.age,
+        userData.gender,
+        userData.heightCm,
+        userData.weightKg,
+        userData.allergies,
+        userData.chronicDiseases
+      );
+
+      // Refetch profile to ensure we have latest data
+      await refetchProfile();
+
       setIsEditing(false);
-      setIsSaving(false);
       alert("Profile updated successfully!");
-    }, 1000);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      alert("Failed to update profile. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -96,8 +131,11 @@ export function ProfileView() {
   };
 
   const calculateBMI = () => {
-    const heightInMeters = userData.heightCm / 100;
-    return (userData.weightKg / (heightInMeters * heightInMeters)).toFixed(1);
+    const heightInMeters = Number(userDefaultData?.height_cm) / 100;
+    return (
+      Number(userDefaultData?.weight_kg) /
+      (heightInMeters * heightInMeters)
+    ).toFixed(1);
   };
 
   const getBMICategory = (bmi: number) => {
@@ -119,36 +157,37 @@ export function ProfileView() {
           <div className="flex flex-col md:flex-row gap-5 items-center justify-between">
             <div className="flex flex-col md:flex-row items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={userData.avatar} alt={userData.fullName} />
+                <AvatarImage
+                  src={userData.avatar}
+                  alt={userDefaultData?.full_name}
+                />
                 <AvatarFallback className="text-lg">
-                  {userData.fullName
+                  {userDefaultData?.full_name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-2 items-center md:items-start">
-                <CardTitle className="text-2xl">{userData.fullName}</CardTitle>
-                <CardDescription className="text-base">
-                  {userData.email}
+                <CardTitle className="text-2xl">
+                  {userDefaultData?.full_name}
+                </CardTitle>
+                <CardDescription className="text-base opacity-50">
+                  email (soon)
                 </CardDescription>
                 <div className="flex items-center flex-col md:flex-row gap-2 mt-2">
-                  <Badge variant="outline">
-                    <Calendar className="h-3 w-3" />
-                    Joined {new Date(userData.joinDate).toLocaleDateString()}
-                  </Badge>
                   <Badge variant="secondary">
                     <Shield className="h-3 w-3" />
-                    Principal: {userData.id}
+                    Principal: {principal?.toString().slice(0, 20) + "..."}
                   </Badge>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline">
+              <Button disabled variant="outline">
                 <Camera className="h-4 w-4" />
-                Change Photo
+                Change Photo (soon)
               </Button>
               {!isEditing ? (
                 <Button onClick={() => setIsEditing(true)}>
@@ -194,7 +233,7 @@ export function ProfileView() {
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userData.fullName}
+                    {userDefaultData?.full_name}
                   </p>
                 )}
               </div>
@@ -211,7 +250,7 @@ export function ProfileView() {
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userData.age} years old
+                    {userDefaultData?.age} years old
                   </p>
                 )}
               </div>
@@ -234,7 +273,7 @@ export function ProfileView() {
                   </Select>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userData.gender}
+                    {userDefaultData?.gender}
                   </p>
                 )}
               </div>
@@ -267,7 +306,7 @@ export function ProfileView() {
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userData.heightCm} cm
+                    {userDefaultData?.height_cm} cm
                   </p>
                 )}
               </div>
@@ -284,7 +323,7 @@ export function ProfileView() {
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userData.weightKg} kg
+                    {userDefaultData?.weight_kg} kg
                   </p>
                 )}
               </div>
@@ -328,7 +367,7 @@ export function ProfileView() {
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {userData.allergies || "No known allergies"}
+                  {userDefaultData?.allergies[0] || "No known allergies"}
                 </p>
               )}
             </div>
@@ -345,7 +384,8 @@ export function ProfileView() {
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {userData.chronicDiseases || "No chronic conditions"}
+                  {userDefaultData?.chronic_diseases[0] ||
+                    "No chronic conditions"}
                 </p>
               )}
             </div>
@@ -376,7 +416,8 @@ export function ProfileView() {
               <div className="text-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
                 <Award className="h-8 w-8 text-green-600 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-green-700">
-                  {userData.publicDataCount}
+                  {userHistoryCheckup?.filter((checkup) => checkup.is_public)
+                    .length || 0}
                 </p>
                 <p className="text-sm text-green-600">Public Checkups</p>
               </div>
@@ -385,18 +426,24 @@ export function ProfileView() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Public Data Shared</span>
-                <span>{userData.publicDataCount} checkups</span>
+                <span>
+                  {userHistoryCheckup?.filter((checkup) => checkup.is_public)
+                    .length || 0}{" "}
+                  checkups
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Private Data Stored</span>
-                <span>{userData.privateDataCount} checkups</span>
+                <span>
+                  {" "}
+                  {userHistoryCheckup?.filter((checkup) => !checkup.is_public)
+                    .length || 0}{" "}
+                  checkups
+                </span>
               </div>
               <div className="flex justify-between text-sm font-medium">
                 <span>Total Contributions</span>
-                <span>
-                  {userData.publicDataCount + userData.privateDataCount}{" "}
-                  checkups
-                </span>
+                <span>{userHistoryCheckup?.length || 0} checkups</span>
               </div>
             </div>
             <Alert className="mt-4" variant="success">
@@ -411,7 +458,7 @@ export function ProfileView() {
       </div>
 
       {/* Privacy Settings */}
-      <Card>
+      <Card className="opacity-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="size-4 text-primary" />
@@ -430,7 +477,7 @@ export function ProfileView() {
                   Control who can see your basic profile information
                 </p>
               </div>
-              <Select defaultValue="private">
+              <Select disabled defaultValue="private">
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -449,7 +496,9 @@ export function ProfileView() {
                   Download all your health data
                 </p>
               </div>
-              <Button variant="outline">Export Data</Button>
+              <Button disabled variant="outline">
+                Export Data
+              </Button>
             </div>
 
             <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
@@ -459,7 +508,9 @@ export function ProfileView() {
                   Permanently delete your account and all data
                 </p>
               </div>
-              <Button variant="destructive">Delete Account</Button>
+              <Button disabled variant="destructive">
+                Delete Account
+              </Button>
             </div>
           </div>
         </CardContent>
