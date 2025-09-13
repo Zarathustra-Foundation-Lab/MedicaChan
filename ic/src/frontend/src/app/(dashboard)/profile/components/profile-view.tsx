@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  useGetPublicData,
-  useGetPrivateData,
   useUpdateProfile,
   useUserProfile,
   useGetUserHistory,
@@ -66,10 +64,10 @@ interface UserProfile {
   fullName: string;
   age: number;
   gender: string;
-  heightCm: number;
-  weightKg: number;
-  allergies: string;
-  chronicDiseases: string;
+  heightCm?: number;
+  weightKg?: number;
+  allergies?: string;
+  chronicDiseases?: string;
   totalRewards: number;
   avatar: string;
   email: string;
@@ -89,23 +87,63 @@ export function ProfileView() {
     principal?.toString() || ""
   );
 
-  const [userData, setUserData] = useState<UserProfile>(initialUserData);
+  // State untuk menyimpan data yang sedang diedit
+  const [editData, setEditData] = useState<UserProfile>({
+    id: initialUserData.id,
+    fullName: initialUserData.fullName,
+    age: initialUserData.age,
+    gender: initialUserData.gender,
+    heightCm: initialUserData.heightCm,
+    weightKg: initialUserData.weightKg,
+    allergies: initialUserData.allergies,
+    chronicDiseases: initialUserData.chronicDiseases,
+    totalRewards: initialUserData.totalRewards,
+    avatar: initialUserData.avatar,
+    email: initialUserData.email,
+    joinDate: initialUserData.joinDate,
+    publicDataCount: initialUserData.publicDataCount,
+    privateDataCount: initialUserData.privateDataCount,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sinkronisasi editData dengan userDefaultData saat data dari backend diperbarui
+  useEffect(() => {
+    if (userDefaultData) {
+      setEditData((prev) => ({
+        ...prev,
+        fullName: userDefaultData.full_name,
+        age: userDefaultData.age,
+        gender: userDefaultData.gender,
+        heightCm: userDefaultData.height_cm
+          ? userDefaultData.height_cm[0]
+          : undefined,
+        weightKg: userDefaultData.weight_kg
+          ? userDefaultData.weight_kg[0]
+          : undefined,
+        allergies: userDefaultData.allergies
+          ? userDefaultData.allergies[0]
+          : undefined,
+        chronicDiseases: userDefaultData.chronic_diseases
+          ? userDefaultData.chronic_diseases[0]
+          : undefined,
+      }));
+    }
+  }, [userDefaultData]);
 
   const handleSave = async () => {
     setIsSaving(true);
 
     try {
       await updateProfile(
-        initialUserData.id,
-        userData.fullName,
-        userData.age,
-        userData.gender,
-        userData.heightCm,
-        userData.weightKg,
-        userData.allergies,
-        userData.chronicDiseases
+        principal?.toString() || "",
+        editData.fullName,
+        editData.age || 0,
+        editData.gender,
+        editData.heightCm,
+        editData.weightKg,
+        editData.allergies,
+        editData.chronicDiseases
       );
 
       // Refetch profile to ensure we have latest data
@@ -122,12 +160,28 @@ export function ProfileView() {
   };
 
   const handleCancel = () => {
-    setUserData(initialUserData);
     setIsEditing(false);
-  };
-
-  const updateUserData = (field: keyof UserProfile, value: string | number) => {
-    setUserData((prev) => ({ ...prev, [field]: value }));
+    // Reset editData to match the current userDefaultData
+    if (userDefaultData) {
+      setEditData((prev) => ({
+        ...prev,
+        fullName: userDefaultData.full_name,
+        age: userDefaultData.age,
+        gender: userDefaultData.gender,
+        heightCm: userDefaultData.height_cm
+          ? userDefaultData.height_cm[0]
+          : undefined,
+        weightKg: userDefaultData.weight_kg
+          ? userDefaultData.weight_kg[0]
+          : undefined,
+        allergies: userDefaultData.allergies
+          ? userDefaultData.allergies[0]
+          : undefined,
+        chronicDiseases: userDefaultData.chronic_diseases
+          ? userDefaultData.chronic_diseases[0]
+          : undefined,
+      }));
+    }
   };
 
   const calculateBMI = () => {
@@ -158,7 +212,7 @@ export function ProfileView() {
             <div className="flex flex-col md:flex-row items-center gap-4">
               <Avatar className="h-20 w-20">
                 <AvatarImage
-                  src={userData.avatar}
+                  src={editData.avatar}
                   alt={userDefaultData?.full_name}
                 />
                 <AvatarFallback className="text-lg">
@@ -228,8 +282,13 @@ export function ProfileView() {
                 <label className="text-sm font-medium">Full Name</label>
                 {isEditing ? (
                   <Input
-                    value={userData.fullName}
-                    onChange={(e) => updateUserData("fullName", e.target.value)}
+                    value={editData.fullName}
+                    onChange={(e) =>
+                      setEditData((prev) => ({
+                        ...prev,
+                        fullName: e.target.value,
+                      }))
+                    }
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
@@ -243,9 +302,12 @@ export function ProfileView() {
                 {isEditing ? (
                   <Input
                     type="number"
-                    value={userData.age}
+                    value={editData.age}
                     onChange={(e) =>
-                      updateUserData("age", parseInt(e.target.value))
+                      setEditData((prev) => ({
+                        ...prev,
+                        age: parseInt(e.target.value),
+                      }))
                     }
                   />
                 ) : (
@@ -259,8 +321,11 @@ export function ProfileView() {
                 <label className="text-sm font-medium">Gender</label>
                 {isEditing ? (
                   <Select
-                    value={userData.gender}
-                    onValueChange={(value) => updateUserData("gender", value)}
+                    value={editData.gender}
+                    defaultValue={editData.gender}
+                    onValueChange={(value) =>
+                      setEditData((prev) => ({ ...prev, gender: value }))
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -299,14 +364,20 @@ export function ProfileView() {
                 {isEditing ? (
                   <Input
                     type="number"
-                    value={userData.heightCm}
+                    value={editData.heightCm || ""}
                     onChange={(e) =>
-                      updateUserData("heightCm", parseFloat(e.target.value))
+                      setEditData((prev) => ({
+                        ...prev,
+                        heightCm: parseFloat(e.target.value),
+                      }))
                     }
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userDefaultData?.height_cm} cm
+                    {userDefaultData?.height_cm
+                      ? userDefaultData.height_cm[0]
+                      : "N/A"}{" "}
+                    cm
                   </p>
                 )}
               </div>
@@ -316,14 +387,20 @@ export function ProfileView() {
                 {isEditing ? (
                   <Input
                     type="number"
-                    value={userData.weightKg}
+                    value={editData.weightKg || ""}
                     onChange={(e) =>
-                      updateUserData("weightKg", parseFloat(e.target.value))
+                      setEditData((prev) => ({
+                        ...prev,
+                        weightKg: parseFloat(e.target.value),
+                      }))
                     }
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {userDefaultData?.weight_kg} kg
+                    {userDefaultData?.weight_kg
+                      ? userDefaultData.weight_kg[0]
+                      : "N/A"}{" "}
+                    kg
                   </p>
                 )}
               </div>
@@ -361,13 +438,20 @@ export function ProfileView() {
               <label className="text-sm font-medium">Allergies</label>
               {isEditing ? (
                 <Textarea
-                  value={userData.allergies}
-                  onChange={(e) => updateUserData("allergies", e.target.value)}
+                  value={editData.allergies || ""}
+                  onChange={(e) =>
+                    setEditData((prev) => ({
+                      ...prev,
+                      allergies: e.target.value,
+                    }))
+                  }
                   placeholder="List any allergies..."
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {userDefaultData?.allergies[0] || "No known allergies"}
+                  {userDefaultData?.allergies
+                    ? userDefaultData.allergies[0]
+                    : "No known allergies"}
                 </p>
               )}
             </div>
@@ -376,16 +460,20 @@ export function ProfileView() {
               <label className="text-sm font-medium">Chronic Diseases</label>
               {isEditing ? (
                 <Textarea
-                  value={userData.chronicDiseases}
+                  value={editData.chronicDiseases || ""}
                   onChange={(e) =>
-                    updateUserData("chronicDiseases", e.target.value)
+                    setEditData((prev) => ({
+                      ...prev,
+                      chronicDiseases: e.target.value,
+                    }))
                   }
                   placeholder="List any chronic conditions..."
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {userDefaultData?.chronic_diseases[0] ||
-                    "No chronic conditions"}
+                  {userDefaultData?.chronic_diseases
+                    ? userDefaultData.chronic_diseases[0]
+                    : "No chronic conditions"}
                 </p>
               )}
             </div>
@@ -408,9 +496,12 @@ export function ProfileView() {
               <div className="text-center p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
                 <Coins className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-yellow-700">
-                  {userData.totalRewards}
+                  {Number(
+                    userHistoryCheckup?.filter((checkup) => checkup.is_public)
+                      .length
+                  ) * 10}
                 </p>
-                <p className="text-sm text-yellow-600">DHT Tokens</p>
+                <p className="text-sm text-yellow-600">$MEDCN Tokens</p>
               </div>
 
               <div className="text-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
@@ -457,12 +548,12 @@ export function ProfileView() {
         </Card>
       </div>
 
-      {/* Privacy Settings */}
+      {/* Privacy Settings (soon feature) */}
       <Card className="opacity-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="size-4 text-primary" />
-            Privacy & Security
+            Privacy & Security (soon)
           </CardTitle>
           <CardDescription>
             Manage your data privacy preferences

@@ -328,10 +328,10 @@ export const useUpdateProfile = () => {
           fullName,
           age,
           gender,
-          [heightCm!],
-          [weightKg!],
-          [allergies!],
-          [chronicDiseases!]
+          [heightCm || 0],
+          [weightKg || 0],
+          [allergies || ""],
+          [chronicDiseases || ""]
         );
 
         if ("Ok" in result) {
