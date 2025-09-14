@@ -59,7 +59,7 @@ const Summary = ({ dashboardData }: { dashboardData: any }) => {
 
       <Card>
         <CardHeader>
-          <CardDescription>DHT Rewards</CardDescription>
+          <CardDescription>$MEDCN Rewards</CardDescription>
           <CardTitle className="text-3xl font-semibold tabular-nums text-primary">
             {dashboardData.totalRewards}
           </CardTitle>

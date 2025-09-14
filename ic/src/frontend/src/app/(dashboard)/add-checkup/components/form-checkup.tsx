@@ -463,7 +463,7 @@ export function FormCheckup() {
                       <p className="text-sm text-muted-foreground">
                         {isPrivate
                           ? "Only you can see this data"
-                          : "Data will be available for AI analysis and you'll earn 10 DHT tokens"}
+                          : "Data will be available for AI analysis and you'll earn 10 $MEDCN tokens"}
                       </p>
                     </div>
                   </div>
@@ -480,7 +480,7 @@ export function FormCheckup() {
                   <Alert className="mt-4" variant="success">
                     <DollarSign />
                     <AlertDescription className="font-semibold text-emerald-600">
-                      Publishing this data will earn you 10 DHT tokens as a
+                      Publishing this data will earn you 10 $MEDCN tokens as a
                       reward for contributing to the health database.
                     </AlertDescription>
                   </Alert>

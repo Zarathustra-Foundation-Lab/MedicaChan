@@ -198,7 +198,7 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.8 }}
           >
             Securely store your daily health checkups, control your privacy, and
-            earn DHT tokens by contributing to AI-powered health research.
+            earn $MEDCN tokens by contributing to AI-powered health research.
           </motion.p>
 
           <motion.div

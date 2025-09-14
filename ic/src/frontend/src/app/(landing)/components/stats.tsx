@@ -16,7 +16,7 @@ const Stats = () => {
     {
       value: 10000,
       suffix: "+",
-      label: "DHT Tokens Distributed",
+      label: "$MEDCN Tokens Distributed",
     },
     {
       value: 100,

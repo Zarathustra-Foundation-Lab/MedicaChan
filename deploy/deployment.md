@@ -85,7 +85,7 @@ graph LR
        T2 --> T3[Validate Checkup]
        T3 --> T4[Calculate Rewards]
        T4 --> T5{Reward Type}
-       T5 -->|DHT Tokens| T6[ICRC-1 Ledger]
+       T5 -->|$MEDCN Tokens| T6[ICRC-1 Ledger]
        T5 -->|Badge NFT| T7[ICRC-7 Ledger]
        T6 --> T8[Update User Balance]
        T7 --> T8

@@ -74,11 +74,11 @@ const Features = () => {
       icon: Coins,
       title: "Earn Rewards",
       description:
-        "Get DHT tokens when you share your anonymized data for research.",
+        "Get $MEDCN tokens when you share your anonymized data for research.",
       iconBg: "bg-yellow-100 dark:bg-yellow-900",
       iconColor: "text-yellow-600 dark:text-yellow-400",
       items: [
-        "10 DHT per public checkup",
+        "10 $MEDCN per public checkup",
         "Bonus rewards for consistency",
         "Stake tokens for governance",
       ],

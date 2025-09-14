@@ -537,7 +537,7 @@ export function ProfileView() {
             <Alert className="mt-4" variant="success">
               <Lightbulb />
               <AlertDescription className="font-semibold text-emerald-600">
-                Share more health data publicly to earn additional DHT tokens
+                Share more health data publicly to earn additional $MEDCN tokens
                 and contribute to AI health research.
               </AlertDescription>
             </Alert>
