@@ -128,7 +128,7 @@ export function FormCheckup() {
           heart_rate: parseInt(values.heartRate),
           respiration_rate: values.respirationRate
             ? [parseInt(values.respirationRate)]
-            : [],
+            : [0],
           sleep_hours: values.sleepHours ? [parseFloat(values.sleepHours)] : [],
           mood: values.mood,
           activity_level: values.activityLevel,

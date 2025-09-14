@@ -74,52 +74,53 @@ export default function RegisterPage() {
   if (data != null && isAuth) {
     router.push("/dashboard");
     return;
-  } else if (!principal && !data) {
+  } else if (principal && !data) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl space-y-4">
+          <ProgressHeader currentStep={currentStep} progress={progress} />
+          <StepNav currentStep={currentStep} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {registerSteps[currentStep - 1].title}
+              </CardTitle>
+              <CardDescription>
+                {registerSteps[currentStep - 1].description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {currentStep === 1 && (
+                <FormBasicInfo
+                  currentStep={currentStep}
+                  prevStep={prevStep}
+                  nextStep={nextStep}
+                />
+              )}
+              {currentStep === 2 && (
+                <FormPhysicalInfo
+                  currentStep={currentStep}
+                  prevStep={prevStep}
+                  nextStep={nextStep}
+                />
+              )}
+              {currentStep === 3 && (
+                <FormMedicalHistory
+                  currentStep={currentStep}
+                  prevStep={prevStep}
+                  nextStep={nextStep}
+                />
+              )}
+              {currentStep === 4 && (
+                <ReviewConfirm currentStep={currentStep} prevStep={prevStep} />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  } else {
+    router.replace("/");
     return;
   }
-
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-4">
-        <ProgressHeader currentStep={currentStep} progress={progress} />
-        <StepNav currentStep={currentStep} />
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {registerSteps[currentStep - 1].title}
-            </CardTitle>
-            <CardDescription>
-              {registerSteps[currentStep - 1].description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {currentStep === 1 && (
-              <FormBasicInfo
-                currentStep={currentStep}
-                prevStep={prevStep}
-                nextStep={nextStep}
-              />
-            )}
-            {currentStep === 2 && (
-              <FormPhysicalInfo
-                currentStep={currentStep}
-                prevStep={prevStep}
-                nextStep={nextStep}
-              />
-            )}
-            {currentStep === 3 && (
-              <FormMedicalHistory
-                currentStep={currentStep}
-                prevStep={prevStep}
-                nextStep={nextStep}
-              />
-            )}
-            {currentStep === 4 && (
-              <ReviewConfirm currentStep={currentStep} prevStep={prevStep} />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
 }
