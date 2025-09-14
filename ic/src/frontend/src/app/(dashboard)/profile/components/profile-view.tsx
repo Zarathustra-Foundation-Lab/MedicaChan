@@ -496,10 +496,7 @@ export function ProfileView() {
               <div className="text-center p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
                 <Coins className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-yellow-700">
-                  {Number(
-                    userHistoryCheckup?.filter((checkup) => checkup.is_public)
-                      .length
-                  ) * 10}
+                  {userDefaultData?.total_rewards.toString()}
                 </p>
                 <p className="text-sm text-yellow-600">$MEDCN Tokens</p>
               </div>

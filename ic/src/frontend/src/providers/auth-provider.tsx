@@ -22,10 +22,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const network = process.env.DFX_NETWORK;
+const network = process.env.NEXT_PUBLIC_DFX_NETWORK;
 
 const host =
-  process.env.DFX_NETWORK === "ic"
+  process.env.NEXT_PUBLIC_DFX_NETWORK === "ic"
     ? "https://ic0.app" // Mainnet
     : `http://127.0.0.1:4943`; // Localnet
 

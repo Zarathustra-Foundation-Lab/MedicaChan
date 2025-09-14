@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { HttpAgent } from "@dfinity/agent";
-import { _SERVICE } from "../../../declarations/backend/backend.did";
-import { createActor } from "../../../declarations/backend";
+// import { _SERVICE } from "../../../declarations/backend/backend.did";
+import { _SERVICE } from "./declaration-backend/backend.did";
+// import { createActor } from "../../../declarations/backend";
+import { createActor } from "./declaration-backend";
 
 /**
  * Hook untuk membuat actor service dengan konfigurasi jaringan yang sesuai
@@ -18,7 +20,7 @@ export const useService = (
   return useMemo(() => {
     // Tentukan host berdasarkan jaringan
     const host =
-      process.env.DFX_NETWORK === "ic"
+      process.env.NEXT_PUBLIC_DFX_NETWORK === "ic"
         ? "https://ic0.app" // Mainnet
         : `http://127.0.0.1:4943`; // Localnet
 
@@ -29,7 +31,7 @@ export const useService = (
     });
 
     // Ambil root key hanya di lingkungan non-mainnet
-    if (process.env.DFX_NETWORK !== "ic") {
+    if (process.env.NEXT_PUBLIC_DFX_NETWORK !== "ic") {
       agent.fetchRootKey().catch((err) => {
         console.warn("Failed to fetch root key:", err);
       });

@@ -20,11 +20,18 @@ import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Logo } from "@/app/(landing)/components/navbar/logo";
 import { Badge } from "./ui/badge";
+import { useUserProfile } from "@/hooks/use-backend";
+import { useAuth } from "@/providers/auth-provider";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const { setOpenMobile } = useSidebar();
+
+  const { principal } = useAuth();
+  const { data: userData, refetch } = useUserProfile(
+    principal?.toString() || ""
+  );
 
   const isActive = (url: string) => url === pathname;
 
@@ -56,6 +63,10 @@ export function AppSidebar() {
       setOpenMobile(false);
     }
   }, [pathname, isMobile, setOpenMobile]);
+
+  useEffect(() => {
+    refetch();
+  }, [userData, refetch, principal]);
 
   return (
     <Sidebar>
@@ -91,10 +102,10 @@ export function AppSidebar() {
               <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 dark:bg-muted/50 border">
                 <div>
                   <p className="text-sm font-medium">Total Rewards</p>
-                  <p className="text-xs text-muted-foreground">DHT Tokens</p>
+                  <p className="text-xs text-muted-foreground">$MEDCN Tokens</p>
                 </div>
                 <Badge variant="secondary" className="ml-2">
-                  0
+                  {userData?.total_rewards.toString()}
                 </Badge>
               </div>
             </div>

@@ -1,11 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useService } from "./service";
+
+// import type {
+//   // _SERVICE,
+//   HealthData,
+//   HealthCheckup,
+//   User,
+// } from "../../../declarations/backend/backend.did.d";
+
 import type {
   // _SERVICE,
   HealthData,
   HealthCheckup,
   User,
-} from "../../../declarations/backend/backend.did.d";
+} from "./declaration-backend/backend.did";
+
 import { Principal } from "@dfinity/principal";
 
 // Tipe untuk hasil operasi
@@ -267,8 +276,8 @@ export const useRegisterUser = () => {
           fullName,
           age,
           gender,
-          weightKg !== undefined ? [weightKg] : [],
           heightCm !== undefined ? [heightCm] : [],
+          weightKg !== undefined ? [weightKg] : [],
           chronicDiseases !== undefined ? [chronicDiseases] : [],
           allergies !== undefined ? [allergies] : []
         );

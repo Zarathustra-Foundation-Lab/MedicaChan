@@ -50,9 +50,9 @@ const moodEmojis: Record<string, string> = {
 const formatTimestamp = (timestamp: bigint | number | string): string => {
   // Konversi ke number dalam milidetik
   let timestampMs: number;
-  if (typeof timestamp === 'bigint') {
+  if (typeof timestamp === "bigint") {
     timestampMs = Number(timestamp) / 1_000_000; // nanodetik ke milidetik
-  } else if (typeof timestamp === 'string') {
+  } else if (typeof timestamp === "string") {
     timestampMs = parseInt(timestamp) / 1_000_000;
   } else {
     timestampMs = timestamp / 1_000_000;
@@ -63,14 +63,14 @@ const formatTimestamp = (timestamp: bigint | number | string): string => {
     try {
       const dateObj = new Date(timestampMs);
       if (!isNaN(dateObj.getTime())) {
-        return new Intl.DateTimeFormat('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
+        return new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
         }).format(dateObj);
       }
     } catch (error) {
-      console.error('Error formatting date:', error);
+      console.error("Error formatting date:", error);
     }
   }
   return "Invalid Date";
@@ -78,7 +78,12 @@ const formatTimestamp = (timestamp: bigint | number | string): string => {
 
 export function HistoryView() {
   const { principal } = useAuth();
-  const { data: historyData, loading, error, refetch: refetchHistory } = useGetUserHistory(principal?.toString() ?? "");
+  const {
+    data: historyData,
+    loading,
+    error,
+    refetch: refetchHistory,
+  } = useGetUserHistory(principal?.toString() ?? "");
   const { mutate: publishCheckup, loading: publishing } = usePublishCheckup();
 
   // State untuk filter
@@ -90,7 +95,7 @@ export function HistoryView() {
 
   const togglePrivacy = async (id: string) => {
     if (!principal) return;
-    
+
     try {
       await publishCheckup(principal.toString(), id);
       // Refetch data setelah publish/unpublish
@@ -135,9 +140,7 @@ export function HistoryView() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Heart className="h-12 w-12 text-primary mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              No health data found
-            </h3>
+            <h3 className="text-lg font-medium mb-2">No health data found</h3>
             <p className="text-muted-foreground text-center">
               No health checkup records found for this user
             </p>
@@ -148,49 +151,59 @@ export function HistoryView() {
   }
 
   // Filter dan sort data
-  const filteredRecords = historyData.filter((record) => {
-    // Filter berdasarkan tipe
-    const typeMatch = 
-      filterType === "all" || 
-      (filterType === "public" && record.is_public) || 
-      (filterType === "private" && !record.is_public);
+  const filteredRecords = historyData
+    .filter((record) => {
+      // Filter berdasarkan tipe
+      const typeMatch =
+        filterType === "all" ||
+        (filterType === "public" && record.is_public) ||
+        (filterType === "private" && !record.is_public);
 
-    // Filter berdasarkan pencarian
-    const searchLower = searchTerm.toLowerCase();
-    const searchMatch = 
-      !searchTerm ||
-      record.data.mood.toLowerCase().includes(searchLower) ||
-      record.data.note.toLowerCase().includes(searchLower) ||
-      formatTimestamp(record.date).toLowerCase().includes(searchLower);
+      // Filter berdasarkan pencarian
+      const searchLower = searchTerm.toLowerCase();
+      const searchMatch =
+        !searchTerm ||
+        record.data.mood.toLowerCase().includes(searchLower) ||
+        record.data.note.toLowerCase().includes(searchLower) ||
+        formatTimestamp(record.date).toLowerCase().includes(searchLower);
 
-    return typeMatch && searchMatch;
-  }).sort((a, b) => {
-    // Sortir berdasarkan kriteria pilihan
-    if (sortBy === "date") {
-      const aTime = typeof a.date === 'bigint' ? Number(a.date) / 1_000_000 : Number(a.date) / 1_000_000;
-      const bTime = typeof b.date === 'bigint' ? Number(b.date) / 1_000_000 : Number(b.date) / 1_000_000;
-      return bTime - aTime; // Newest first
-    }
-    
-    if (sortBy === "temperature") {
-      return b.data.temperature - a.data.temperature;
-    }
-    
-    if (sortBy === "mood") {
-      return a.data.mood.localeCompare(b.data.mood);
-    }
-    
-    return 0;
-  });
+      return typeMatch && searchMatch;
+    })
+    .sort((a, b) => {
+      // Sortir berdasarkan kriteria pilihan
+      if (sortBy === "date") {
+        const aTime =
+          typeof a.date === "bigint"
+            ? Number(a.date) / 1_000_000
+            : Number(a.date) / 1_000_000;
+        const bTime =
+          typeof b.date === "bigint"
+            ? Number(b.date) / 1_000_000
+            : Number(b.date) / 1_000_000;
+        return bTime - aTime; // Newest first
+      }
+
+      if (sortBy === "temperature") {
+        return b.data.temperature - a.data.temperature;
+      }
+
+      if (sortBy === "mood") {
+        return a.data.mood.localeCompare(b.data.mood);
+      }
+
+      return 0;
+    });
 
   // Hitung statistik
   const stats = {
     total: filteredRecords.length,
     public: filteredRecords.filter((r) => r.is_public).length,
     private: filteredRecords.filter((r) => !r.is_public).length,
-    avgTemperature: filteredRecords.length > 0 
-      ? filteredRecords.reduce((sum, r) => sum + r.data.temperature, 0) / filteredRecords.length
-      : 0,
+    avgTemperature:
+      filteredRecords.length > 0
+        ? filteredRecords.reduce((sum, r) => sum + r.data.temperature, 0) /
+          filteredRecords.length
+        : 0,
   };
 
   return (
@@ -311,7 +324,9 @@ export function HistoryView() {
                 No checkup records found
               </h3>
               <p className="text-muted-foreground text-center">
-                {searchTerm ? "Try adjusting your search criteria" : "No records match your filters"}
+                {searchTerm
+                  ? "Try adjusting your search criteria"
+                  : "No records match your filters"}
               </p>
             </CardContent>
           </Card>
@@ -345,32 +360,29 @@ export function HistoryView() {
                         </>
                       )}
                     </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {/* Disable toggle privacy saat publishing */}
-                        <DropdownMenuItem
-                          onClick={() => togglePrivacy(record.id)}
-                          disabled={publishing}
-                        >
-                          {record.is_public ? (
-                            <>
-                              <EyeOff className="size-4" />
-                              Make Private
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="size-4" />
-                              Publish Public
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {!record.is_public && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {/* Disable toggle privacy saat publishing */}
+                          <DropdownMenuItem
+                            onClick={() => togglePrivacy(record.id)}
+                            disabled={publishing}
+                          >
+                            {!record.is_public && (
+                              <>
+                                <Eye className="size-4" />
+                                Publish Public
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -391,7 +403,8 @@ export function HistoryView() {
                         {record.data.blood_pressure} mmHg
                       </p>
                       <p className="text-sm">
-                        <strong>Heart Rate:</strong> {record.data.heart_rate} BPM
+                        <strong>Heart Rate:</strong> {record.data.heart_rate}{" "}
+                        BPM
                       </p>
                       {record.data.respiration_rate && (
                         <p className="text-sm">
