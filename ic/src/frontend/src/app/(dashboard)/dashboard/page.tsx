@@ -1,13 +1,15 @@
 "use client";
-
+import { Suspense } from "react";
 import { TitleContent } from "@/components/title-content";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Summary from "./components/summary";
 import RecentCheckup from "./components/recent-checkup";
 import HealthInsight from "./components/health-insight";
+
 import { useAuth } from "@/providers/auth-provider";
 import { useUserProfile } from "../../../hooks/use-backend";
+
 import { useEffect, useMemo } from "react";
 
 /**
@@ -16,7 +18,47 @@ import { useEffect, useMemo } from "react";
  */
 export default function DashboardPage() {
   const router = useRouter();
+  const { principal } = useAuth();
+
+  const { data: userProfileData, loading: userProfileLoading } = useUserProfile(
+    principal?.toString() ?? ""
+  );
+
+  return (
+    <div>
+      <TitleContent
+        title="Dashboard"
+        description="Welcome back! Here's your health data overview."
+        btnText="Add Checkup"
+        btnOnClick={() => {
+          router.push("/add-checkup");
+        }}
+        btnIcon={<Plus />}
+      />
+      <div className="p-5 space-y-5">
+        <Suspense
+          fallback={
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-8 bg-muted rounded w-1/2"></div>
+                  <div className="h-10 w-10 bg-muted rounded-full"></div>
+                </div>
+              ))}
+            </div>
+          }
+        >
+          <DashboardMainContent />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+function DashboardMainContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { principal } = useAuth();
 
   const {
@@ -130,37 +172,26 @@ export default function DashboardPage() {
   }, [userProfileData]);
 
   return (
-    <div>
-      <TitleContent
-        title="Dashboard"
-        description="Welcome back! Here's your health data overview."
-        btnText="Add Checkup"
-        btnOnClick={() => {
-          router.push("/add-checkup");
-        }}
-        btnIcon={<Plus />}
-      />
-      <div className="p-5 space-y-5">
-        {loading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-8 bg-muted rounded w-1/2"></div>
-                <div className="h-10 w-10 bg-muted rounded-full"></div>
-              </div>
-            ))}
-          </div>
-        ) : dashboardData ? (
-          <>
-            <Summary dashboardData={dashboardData} />
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-              <RecentCheckup dashboardData={dashboardData} />
-              {/* <HealthInsight /> */}
+    <>
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+              <div className="h-8 bg-muted rounded w-1/2"></div>
+              <div className="h-10 w-10 bg-muted rounded-full"></div>
             </div>
-          </>
-        ) : null}
-      </div>
-    </div>
+          ))}
+        </div>
+      ) : dashboardData ? (
+        <>
+          <Summary dashboardData={dashboardData} />
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <RecentCheckup dashboardData={dashboardData} />
+            {/* <HealthInsight /> */}
+          </div>
+        </>
+      ) : null}
+    </>
   );
 }
