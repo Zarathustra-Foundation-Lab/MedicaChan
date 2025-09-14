@@ -4,11 +4,19 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { Identity, ActorSubclass } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
+
+// import {
+//   createActor,
+//   canisterId as canisterIdGenerated,
+// } from "../../../declarations/backend";
+
 import {
   createActor,
   canisterId as canisterIdGenerated,
-} from "../../../declarations/backend";
-import { _SERVICE } from "../../../declarations/backend/backend.did";
+} from "../hooks/declaration-backend";
+
+// import { _SERVICE } from "../../../declarations/backend/backend.did";
+import { _SERVICE } from "../hooks/declaration-backend/backend.did";
 
 interface AuthContextType {
   isAuth: boolean;
