@@ -20,17 +20,17 @@ export default function LandingPage() {
   const router = useRouter();
   const { isAuth, principal } = useAuth();
 
-  const { data, error } = useUserProfile(principal?.toString() || "");
+  const { data } = useUserProfile(principal?.toString() || "");
 
   useEffect(() => {
-    if (isAuth && principal && data?.full_name && data.id && !error) {
+    if (isAuth && principal && data?.full_name && data.id) {
       router.push("/dashboard");
     } else if (isAuth && principal && !data?.full_name) {
       if (isAuth === true && principal) {
         router.replace("/register");
       }
     }
-  }, [isAuth, data?.full_name, data?.id, router, principal, error]);
+  }, [isAuth, data?.full_name, data?.id, router, principal]);
 
   return (
     <>
