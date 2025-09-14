@@ -129,7 +129,9 @@ export function FormCheckup() {
           respiration_rate: values.respirationRate
             ? [parseInt(values.respirationRate)]
             : [0],
-          sleep_hours: values.sleepHours ? [parseFloat(values.sleepHours)] : [],
+          sleep_hours: values.sleepHours
+            ? [parseFloat(values.sleepHours)]
+            : [0],
           mood: values.mood,
           activity_level: values.activityLevel,
           note: values.notes ? [values.notes] : [""], // Properti 'note' sesuai dengan tipe HealthData
